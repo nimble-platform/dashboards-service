@@ -4,7 +4,50 @@
     <meta charset="UTF-8">
     <title>Status</title>
 </head>
-<body>
 
+<style>
+                table.statusTable {
+                        table-layout: fixed;
+                        font-family: arial, sans-serif;
+                        border-collapse: collapse;
+                        width: 100%%;
+                }
+                td,
+                th {
+                        font-size: 140%%;
+                        border: 1px solid #dddddd;
+                        text-align: center;
+                        padding: 8px;
+                }
+
+                tr:nth-child(even) {
+                        background-color: #dddddd;
+                }
+
+                th.statusHeader , td.statusData {
+                        font-size: 100%%;
+                        border: 1px solid #dddddd;
+                        text-align: center;
+                        padding: 5px;
+                        white-space: pre,
+                }
+
+</style>
+
+<body>
+<br/>
+<button type="button" onClick="reload()">Refresh</button>
+<br/>
+
+<br/>
+<table class="statusTable" style="width:100%%">
+    <tr><th class="statusHeader">Service Name</th><th class="statusHeader">Last Success</th><th class="statusHeader">Status</th></tr>
+    %s
+</table>
+<br/>
+
+<script>
+
+</script>
 </body>
 </html>

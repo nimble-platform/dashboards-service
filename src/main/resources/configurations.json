@@ -1,0 +1,14 @@
+{
+  "frequency": 5,
+  "services": [
+    {
+      "name": "Messaging-service",
+      "description": "Service responsible for collaborations between users",
+      "endpoint": "messaging-service/health-check",
+      "expectedResponse": {
+        "code": 200,
+        "message": "OK"
+      }
+    }
+  ]
+}

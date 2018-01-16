@@ -20,10 +20,11 @@ public class StatusHandler {
         statusList = loadStatusFromConfigFile();
 
         startChecksThread(frequencyInSec * 60 * 1000);
+        logger.info("The check thread has been started");
     }
 
     private void startChecksThread(int sleepDuration) {
-        Runnable r = new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -40,8 +41,7 @@ public class StatusHandler {
                     run();
                 }
             }
-        };
-        r.run();
+        }).start();
     }
 
     public List<String> getStatusesHtmls() {
@@ -51,7 +51,9 @@ public class StatusHandler {
     }
 
     private List<ServiceStatus> loadStatusFromConfigFile() {
-        return new LinkedList<>();
+        List<ServiceStatus> list = new LinkedList<>();
+        list.add(new ServiceStatus("Messaging-Service", new StatusCheck("http://9.148.10.164:998/health-check", 200, "OK")));
+        return list;
     }
 //
 //    private class HealhChecker implements Runnable{

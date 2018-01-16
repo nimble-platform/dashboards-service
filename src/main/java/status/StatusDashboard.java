@@ -24,19 +24,21 @@ import java.util.List;
 public class StatusDashboard extends Application {
     private final static Logger logger = Logger.getLogger(StatusDashboard.class);
 
-    private StatusHandler handler = new StatusHandler(5);
-    private String htmlTemplate = Common.inputStreamToString(getClass().getResourceAsStream("status.html"));
+    private StatusHandler handler = new StatusHandler(1);
+    private String htmlTemplate = Common.inputStreamToString(getClass().getResourceAsStream("/status.html"));
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getStatisticsDashboard() {
+        logger.info("Creating status dashboard");
+
         StringBuilder sb = new StringBuilder();
         List<String> services = handler.getStatusesHtmls();
 
         services.forEach(sb::append);
 
         String completedHtml = String.format(htmlTemplate, sb.toString());
-        logger.info("The created html dashboard is " + completedHtml);
+//        logger.info("The created html dashboard is " + completedHtml);
 
         return Response.status(200).entity(completedHtml).build();
     }

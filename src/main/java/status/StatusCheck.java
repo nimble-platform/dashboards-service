@@ -31,7 +31,7 @@ public class StatusCheck {
             HttpResponse response = httpclient.execute(getHealth);
             String res = Common.inputStreamToString(response.getEntity().getContent());
 
-            if (!res.equals(expectedMessage) || response.getStatusLine().getStatusCode() != expectedCode) {
+            if (res == null || !res.equals(expectedMessage) || response.getStatusLine().getStatusCode() != expectedCode) {
                  logger.error("Failed on the health check");
                  return Status.BAD;
             }
@@ -44,6 +44,4 @@ public class StatusCheck {
             return Status.BAD;
         }
     }
-
-
 }

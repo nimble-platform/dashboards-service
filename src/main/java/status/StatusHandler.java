@@ -53,6 +53,7 @@ public class StatusHandler {
     private List<ServiceStatus> loadStatusFromConfigFile() {
         List<ServiceStatus> list = new LinkedList<>();
         list.add(new ServiceStatus("Messaging-Service", new StatusCheck("http://9.148.10.164:998/health-check", 200, "OK")));
+        list.add(new ServiceStatus("Dummy-Fails-Service", new StatusCheck("http://no_url_fail", 200, "OK")));
         return list;
     }
 //

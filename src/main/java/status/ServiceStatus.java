@@ -20,11 +20,12 @@ public class ServiceStatus {
     private Status lastCheck;
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s</td><td class=\"statusData\">%s</td><td bgcolor=%s class=\"statusData\">%s</td></tr>";
 
-    private SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
+    private SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss (z)");
 
     public ServiceStatus(String serviceName, StatusCheck statusCheck) {
         this.serviceName = serviceName;
         this.statusCheck = statusCheck;
+
         dateFormatter.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
     }
 
@@ -40,8 +41,6 @@ public class ServiceStatus {
     }
 
     public String generateHtml() {
-        Instant instant = Instant.ofEpochSecond(lastSuccess);
-        ZonedDateTime dt =ZonedDateTime.ofInstant(instant, ZoneOffset.UTC);
         return String.format(statusRowTemplate, serviceName, dateFormatter.format(lastSuccess), lastCheck.getColor(), lastCheck.toString());
     }
 }

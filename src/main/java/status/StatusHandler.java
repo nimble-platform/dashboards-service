@@ -1,9 +1,15 @@
 package status;
 
+import common.Common;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -13,25 +19,34 @@ import java.util.stream.Collectors;
 public class StatusHandler {
     private final static Logger logger = Logger.getLogger(StatusHandler.class);
 
-    private final Object listSync = new Object();
-    private final List<ServiceStatus> statusList;
+    private final Map<String, HealthStatus> serviceToStatus = new HashMap<>();
+    private final Object statusSync = new Object();
 
-    public StatusHandler(int frequencyInSec) {
-        statusList = loadStatusFromConfigFile();
+    private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
-        startChecksThread(frequencyInSec * 60 * 1000);
+
+    public StatusHandler(int frequencyInSec, List<String> servicesNames) {
+        servicesNames.forEach(s -> serviceToStatus.put(s, new HealthStatus()));
+
+        startChecksThread(frequencyInSec * 60 * 1000, servicesNames);
         logger.info("The check thread has been started");
     }
 
-    private void startChecksThread(int sleepDuration) {
+    private void startChecksThread(int sleepDuration, List<String> servicesNames) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
+                    Map<String, CheckResult> serviceToCheckResult = new HashMap<>();
                     while (true) {
-                        synchronized (listSync) {
-                            logger.info("Running check");
-                            statusList.forEach(ServiceStatus::runCheck);
+                        logger.info("Running checks");
+
+                        servicesNames.forEach(s -> {
+                            CheckResult result = runCheck(s);
+                            serviceToCheckResult.put(s, result);
+                        });
+                        synchronized (statusSync) {
+                            serviceToCheckResult.forEach((k, v) -> serviceToStatus.get(k).updateLastCheck(v));
                         }
                         logger.info("Sleeping for - " + sleepDuration);
                         Thread.sleep(sleepDuration);
@@ -45,29 +60,38 @@ public class StatusHandler {
     }
 
     public List<String> getStatusesHtmls() {
-        synchronized (listSync) {
-            return statusList.stream().map(ServiceStatus::generateHtml).collect(Collectors.toList());
+        synchronized (statusSync) {
+            return serviceToStatus.entrySet().stream().map(e -> String.format(statusRowTemplate, e.getKey(), e.getValue().generateHtml())).collect(Collectors.toList());
         }
     }
 
-    private List<ServiceStatus> loadStatusFromConfigFile() {
-        List<ServiceStatus> list = new LinkedList<>();
-        list.add(new ServiceStatus("Messaging-Service", new StatusCheck("http://9.148.10.164:998/health-check", 200, "OK")));
-        list.add(new ServiceStatus("Dummy-Fails-Service", new StatusCheck("http://no_url_fail", 200, "OK")));
-        return list;
+
+    private CheckResult runCheck(String serviceName) {
+        String healthUrl = serviceName + "/health-check";
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet getHealth = new HttpGet(healthUrl);
+
+            HttpResponse response = httpclient.execute(getHealth);
+            String res = Common.inputStreamToString(response.getEntity().getContent());
+
+            String errorMessage;
+            if (res == null) {
+                errorMessage = "Response was null";
+            } else if (!res.equals("OK")) {
+                errorMessage = "Response wasn't OK, it was - " + res;
+            } else if (response.getStatusLine().getStatusCode() != 200) {
+                errorMessage = "Status wasn't 200, it was - " + String.valueOf(response.getStatusLine().getStatusCode());
+            } else {
+                logger.info("The health check was successful for service - " + serviceName);
+                return new CheckResult(CheckResult.Result.GOOD, null);
+            }
+
+            logger.error("Failed on the health check of service - " + serviceName + " due to - " + errorMessage );
+            return new CheckResult(CheckResult.Result.BAD, errorMessage);
+        } catch (Throwable e) {
+            logger.error("Exception during health check of service " + serviceName, e);
+            return new CheckResult(CheckResult.Result.BAD, "Exception - " +e.getCause().getMessage());
+        }
     }
-//
-//    private class HealhChecker implements Runnable{
-//        private int sleepDuration;
-//
-//        public HealhChecker(Object listSync, int sleepDuration) {
-//            this.sleepDuration = sleepDuration;
-//        }
-//
-//        @Override
-//        public void run() {
-//            while
-//        }
-//    }
 }
 

@@ -1,15 +1,7 @@
 {
   "frequency": 5,
-  "failsThreshold": 1,
   "services": [
-    {
-      "name": "Messaging-service",
-      "description": "Service responsible for collaborations between users",
-      "endpoint": "localhost:999/health-check",
-      "expected-response": {
-        "code": 200,
-        "message": "OK"
-      }
-    }
+    "http://9.148.10.164:998",
+    "no-service-url"
   ]
 }

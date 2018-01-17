@@ -1,5 +1,6 @@
 package status;
 
+import com.google.gson.Gson;
 import common.Common;
 import org.apache.log4j.Logger;
 
@@ -11,8 +12,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by evgeniyh on 1/14/18.
@@ -24,8 +26,37 @@ import java.util.List;
 public class StatusDashboard extends Application {
     private final static Logger logger = Logger.getLogger(StatusDashboard.class);
 
-    private StatusHandler handler = new StatusHandler(1);
+    private final Map<String, String> envToFile = new HashMap<String, String>() {
+        {
+            put("dev", "/dev_configurations.json");
+            put("prod", "/configurations.json");
+
+        }
+    };
+    private StatusHandler handler;
     private String htmlTemplate = Common.inputStreamToString(getClass().getResourceAsStream("/status.html"));
+
+    public StatusDashboard() {
+        String env = System.getenv("ENVIRONMENT");
+        if (env == null || env.isEmpty()) {
+            throw new RuntimeException("Missing the ENVIRONMENT environment variable");
+        }
+        String configFile = envToFile.get(env);
+        logger.info("config file - " + configFile);
+        String jsonConfig = Common.inputStreamToString(getClass().getResourceAsStream(configFile));
+        if (jsonConfig == null) {
+            logger.error("Failed to load configurations");
+            throw new NullPointerException("Failed to load configurations");
+        }
+
+        StatusConfigurations configurations = (new Gson()).fromJson(jsonConfig, StatusConfigurations.class);
+
+//        List<String> services = new LinkedList<>();
+//        services.add("http://9.148.10.164:998");
+//        services.add("no-service-url");
+
+        handler = new StatusHandler(configurations.getFrequency(), configurations.getServices());
+    }
 
     @GET
     @Produces(MediaType.TEXT_HTML)

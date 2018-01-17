@@ -32,6 +32,7 @@
                         white-space: pre,
                 }
 
+
 </style>
 
 <body>
@@ -41,12 +42,21 @@
 
 <br/>
 <table class="statusTable" style="width:100%%">
-    <tr><th class="statusHeader">Service Name</th><th class="statusHeader">Last Success</th><th class="statusHeader">Status</th></tr>
+    <tr>
+        <th class="statusHeader">Service Name</th>
+        <th class="statusHeader">Last Success</th>
+        <th class="statusHeader">Status</th>
+    </tr>
     %s
 </table>
 <br/>
 
 <script>
+
+function reload() {
+    console.log("Reloading");
+    location.reload(true);
+}
 
 </script>
 </body>

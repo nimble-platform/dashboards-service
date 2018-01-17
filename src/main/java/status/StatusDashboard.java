@@ -21,7 +21,7 @@ import java.util.Map;
  */
 
 @ApplicationPath("/")
-@Path("/status")
+
 @Singleton
 public class StatusDashboard extends Application {
     private final static Logger logger = Logger.getLogger(StatusDashboard.class);
@@ -59,7 +59,13 @@ public class StatusDashboard extends Application {
     }
 
     @GET
+    public Response getHello() {
+        return Response.status(200).entity("Hello from Dashboards-Service").build();
+    }
+
+    @GET
     @Produces(MediaType.TEXT_HTML)
+    @Path("/status")
     public Response getStatisticsDashboard() {
         logger.info("Creating status dashboard");
 

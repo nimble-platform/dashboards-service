@@ -11,7 +11,7 @@ class HealthStatus {
     private int sequencedFails = 0;
     private long lastSuccess = 0;
     private CheckResult lastCheck;
-    private String statusRowTemplate = "</td><td class=\"statusData\">%s</td><td bgcolor=%s title=\"%s\" class=\"statusData\">%s</td>";
+    private String statusRowTemplate = "</td><td class=\"statusData\">%s</td><td bgcolor=\"%s\" title=\"%s\" class=\"statusData\">%s</td>";
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss (z)");
 

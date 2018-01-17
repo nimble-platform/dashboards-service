@@ -1,7 +1,8 @@
 {
   "frequency": 5,
   "services": [
-    "http://9.148.10.164:998",
-    "no-service-url"
+    "9.148.10.164:998",
+    "no-service-url",
+    "nimble-platform.uk-south.containers.mybluemix.net/messaging"
   ]
 }

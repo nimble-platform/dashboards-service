@@ -78,20 +78,22 @@ public class StatusHandler {
             String errorMessage;
             if (res == null) {
                 errorMessage = "Response was null";
-            } else if (!res.equals("OK")) {
-                errorMessage = "Response wasn't OK, it was - " + res;
             } else if (response.getStatusLine().getStatusCode() != 200) {
                 errorMessage = "Status wasn't 200, it was - " + String.valueOf(response.getStatusLine().getStatusCode());
+            } else if (!res.equals("OK")) {
+                errorMessage = "Response wasn't OK, it was - " + res;
             } else {
                 logger.info("The health check was successful for service - " + serviceName);
                 return new CheckResult(CheckResult.Result.GOOD, null);
             }
 
-            logger.error("Failed on the health check of service - " + serviceName + " due to - " + errorMessage );
+            logger.error("Failed on the health check of service - " + serviceName + " due to - " + errorMessage);
             return new CheckResult(CheckResult.Result.BAD, errorMessage);
         } catch (Throwable e) {
             logger.error("Exception during health check of service " + serviceName, e);
-            return new CheckResult(CheckResult.Result.BAD, "Exception - " +e.getCause().getMessage());
+            Throwable t = e.getCause();
+            String exceptionMessage = (t == null) ? e.getMessage() : t.getMessage();
+            return new CheckResult(CheckResult.Result.BAD, "Exception - " + exceptionMessage);
         }
     }
 }

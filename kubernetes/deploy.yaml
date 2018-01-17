@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: dashboards-service
+  name: dashboards-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboards-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  revisionHistoryLimit: 5
+  template:
+    metadata:
+      labels:
+        app: dashboards-service
+    spec:
+      containers:
+      - image: nimbleplatform/dashboards-service:IMAGE_TAG
+        imagePullPolicy: Always
+        name: dashboards-service
+        env:
+        - name: ENVIRONMENT
+          value: "prod"
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi

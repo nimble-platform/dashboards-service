@@ -21,7 +21,7 @@ import java.util.Map;
  */
 
 @ApplicationPath("/")
-
+@Path("/")
 @Singleton
 public class StatusDashboard extends Application {
     private final static Logger logger = Logger.getLogger(StatusDashboard.class);

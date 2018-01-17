@@ -67,7 +67,8 @@ public class StatusHandler {
 
 
     private CheckResult runCheck(String serviceName) {
-        String healthUrl = serviceName + "/health-check";
+        String healthUrl = String.format("http://%s:8080/health-check", serviceName);
+
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpGet getHealth = new HttpGet(healthUrl);
 

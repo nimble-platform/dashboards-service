@@ -51,10 +51,6 @@ public class StatusDashboard extends Application {
 
         StatusConfigurations configurations = (new Gson()).fromJson(jsonConfig, StatusConfigurations.class);
 
-//        List<String> services = new LinkedList<>();
-//        services.add("http://9.148.10.164:998");
-//        services.add("no-service-url");
-
         handler = new StatusHandler(configurations.getFrequency(), configurations.getServices());
     }
 
@@ -71,11 +67,8 @@ public class StatusDashboard extends Application {
 
         StringBuilder sb = new StringBuilder();
         List<String> services = handler.getStatusesHtmls();
-
         services.forEach(sb::append);
-
         String completedHtml = String.format(htmlTemplate, sb.toString());
-//        logger.info("The created html dashboard is " + completedHtml);
 
         return Response.status(200).entity(completedHtml).build();
     }

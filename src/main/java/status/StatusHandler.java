@@ -2,7 +2,6 @@ package status;
 
 import checks.BasicHealthChecker;
 import checks.CheckResult;
-import checks.DBVariables;
 import checks.DBHealthCheck;
 import checks.HealthChecker;
 import configs.DatabaseConfig;
@@ -36,8 +35,7 @@ public class StatusHandler {
         }
 
         for (DatabaseConfig dbc : dbsToCheck) {
-            DBVariables variables = new DBVariables(dbc.getDriverName(), dbc.getEnvUsername(), dbc.getEnvUrl(), dbc.getEnvPassword());
-            healthChecks.put(dbc.getName(), new DBHealthCheck(dbc.getDriverName(), variables));
+            healthChecks.put(dbc.getName(), new DBHealthCheck(dbc));
             serviceToStatus.put(dbc.getName(), new HealthStatus());
         }
 

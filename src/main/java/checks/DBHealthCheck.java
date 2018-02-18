@@ -1,6 +1,7 @@
 package checks;
 
 import common.Common;
+import configs.DatabaseConfig;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -17,13 +18,13 @@ public class DBHealthCheck implements HealthChecker {
 
     private String connectionUrl;
 
-    public DBHealthCheck(String dbName, DBVariables variables) {
+    public DBHealthCheck(DatabaseConfig dbc) {
         try {
-            Class.forName(variables.getDriverName()); // Check that the driver is ok
+            Class.forName(dbc.getDriverName()); // Check that the driver is ok
 
-            String user = System.getenv(variables.getEnvUsername());
-            String password = System.getenv(variables.getEnvPassword());
-            String url = System.getenv(variables.getEnvUrl());
+            String user = System.getenv(dbc.getEnvUsername());
+            String password = System.getenv(dbc.getEnvPassword());
+            String url = System.getenv(dbc.getEnvUrl());
 
             if (Common.isNullOrEmpty(user) || Common.isNullOrEmpty(url) || Common.isNullOrEmpty(password)) {
                 throw new Exception("Credential values can't be null or empty");

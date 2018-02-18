@@ -1,5 +1,7 @@
 package status;
 
+import checks.CheckResult;
+
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 

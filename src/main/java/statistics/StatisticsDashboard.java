@@ -18,7 +18,7 @@ public class StatisticsDashboard extends Application{
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getStatisticsDashboard() {
-        InputStream is = getClass().getResourceAsStream("statistics.html");
+        InputStream is = getClass().getResourceAsStream("/statistics.html");
         return Response.status(200).entity(is).build();
     }
 }

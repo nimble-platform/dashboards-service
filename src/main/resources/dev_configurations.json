@@ -1,8 +1,26 @@
 {
   "frequency": 5,
   "services": [
-    "9.148.10.164:998",
-    "no-service-url",
-    "nimble-platform.uk-south.containers.mybluemix.net/messaging"
+    {
+      "name": "Messaging-Service (local)",
+      "url": "http://9.148.10.164:998/health-check"
+    },
+    {
+      "name": "ERROR-SERVICE",
+      "url": "http://no-service-url"
+    },
+    {
+      "name": "Messaging-Service (Bluemix)",
+      "url": "http://nimble-platform.uk-south.containers.mybluemix.net/messaging/health-check"
+    }
+  ],
+  "databases": [
+    {
+      "name": "Postgres-Database",
+      "driverName": "org.postgresql.Driver",
+      "envUsername": "POSTGRES_USERNAME",
+      "envPassword": "POSTGRES_PASSWORD",
+      "envUrl": "POSTGRES_URL"
+    }
   ]
 }

@@ -2,6 +2,7 @@ package status;
 
 import com.google.gson.Gson;
 import common.Common;
+import configs.StatusConfigurations;
 import org.apache.log4j.Logger;
 
 import javax.inject.Singleton;
@@ -51,7 +52,7 @@ public class StatusDashboard extends Application {
 
         StatusConfigurations configurations = (new Gson()).fromJson(jsonConfig, StatusConfigurations.class);
 
-        handler = new StatusHandler(configurations.getFrequency(), configurations.getServices());
+        handler = new StatusHandler(configurations.getFrequency(), configurations.getServices(), configurations.getDatabases());
     }
 
     @GET

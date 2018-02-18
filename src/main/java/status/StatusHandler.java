@@ -1,10 +1,12 @@
 package status;
 
-import common.Common;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import checks.BasicHealthChecker;
+import checks.CheckResult;
+import checks.DBVariables;
+import checks.DBHealthCheck;
+import checks.HealthChecker;
+import configs.DatabaseConfig;
+import configs.ServiceConfig;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -25,14 +27,25 @@ public class StatusHandler {
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
 
-    public StatusHandler(int frequencyInSec, List<String> servicesNames) {
-        servicesNames.forEach(s -> serviceToStatus.put(s, new HealthStatus()));
+    public StatusHandler(int frequencyInSec, List<ServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck) {
+        Map<String, HealthChecker> healthChecks = new HashMap<>();
 
-        startChecksThread(frequencyInSec * 60 * 1000, servicesNames);
+        for (ServiceConfig sc : serviceToCheck) {
+            healthChecks.put(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()));
+            serviceToStatus.put(sc.getName(), new HealthStatus());
+        }
+
+        for (DatabaseConfig dbc : dbsToCheck) {
+            DBVariables variables = new DBVariables(dbc.getDriverName(), dbc.getEnvUsername(), dbc.getEnvUrl(), dbc.getEnvPassword());
+            healthChecks.put(dbc.getName(), new DBHealthCheck(dbc.getDriverName(), variables));
+            serviceToStatus.put(dbc.getName(), new HealthStatus());
+        }
+
+        startChecksThread(frequencyInSec * 60 * 1000, healthChecks);
         logger.info("The check thread has been started");
     }
 
-    private void startChecksThread(int sleepDuration, List<String> servicesNames) {
+    private void startChecksThread(int sleepDuration, Map<String, HealthChecker> serviceToCheck) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -41,10 +54,11 @@ public class StatusHandler {
                     while (true) {
                         logger.info("Running checks");
 
-                        servicesNames.forEach(s -> {
-                            CheckResult result = runCheck(s);
-                            serviceToCheckResult.put(s, result);
+                        serviceToCheck.forEach((service, check) -> {
+                            CheckResult result = check.runCheck();
+                            serviceToCheckResult.put(service, result);
                         });
+
                         synchronized (statusSync) {
                             serviceToCheckResult.forEach((k, v) -> serviceToStatus.get(k).updateLastCheck(v));
                         }
@@ -62,38 +76,6 @@ public class StatusHandler {
     public List<String> getStatusesHtmls() {
         synchronized (statusSync) {
             return serviceToStatus.entrySet().stream().map(e -> String.format(statusRowTemplate, e.getKey(), e.getValue().generateHtml())).collect(Collectors.toList());
-        }
-    }
-
-
-    private CheckResult runCheck(String serviceName) {
-        String healthUrl = String.format("http://%s:8080/health-check", serviceName);
-
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpGet getHealth = new HttpGet(healthUrl);
-
-            HttpResponse response = httpclient.execute(getHealth);
-            String res = Common.inputStreamToString(response.getEntity().getContent());
-
-            String errorMessage;
-            if (res == null) {
-                errorMessage = "Response was null";
-            } else if (response.getStatusLine().getStatusCode() != 200) {
-                errorMessage = "Status wasn't 200, it was - " + String.valueOf(response.getStatusLine().getStatusCode());
-            } else if (!res.equals("OK")) {
-                errorMessage = "Response wasn't OK, it was - " + res;
-            } else {
-                logger.info("The health check was successful for service - " + serviceName);
-                return new CheckResult(CheckResult.Result.GOOD, null);
-            }
-
-            logger.error("Failed on the health check of service - " + serviceName + " due to - " + errorMessage);
-            return new CheckResult(CheckResult.Result.BAD, errorMessage);
-        } catch (Throwable e) {
-            logger.error("Exception during health check of service " + serviceName, e);
-            Throwable t = e.getCause();
-            String exceptionMessage = (t == null) ? e.getMessage() : t.getMessage();
-            return new CheckResult(CheckResult.Result.BAD, "Exception - " + exceptionMessage);
         }
     }
 }

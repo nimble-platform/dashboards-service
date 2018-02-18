@@ -7,11 +7,11 @@
     },
     {
       "name": "Messaging-Service",
-      "url": "http://messaging-service/health-check"
+      "url": "http://messaging-service:8080/health-check"
     },
     {
       "name": "Registration Service",
-      "url": "http://registration-service/health-check"
+      "url": "http://registration-service:8080/health-check"
     }
   ],
   "databases": [

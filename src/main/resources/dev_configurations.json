@@ -12,6 +12,10 @@
     {
       "name": "Messaging-Service (Bluemix)",
       "url": "http://nimble-platform.uk-south.containers.mybluemix.net/messaging/health-check"
+    },
+    {
+      "name": "Registration Service",
+      "url": "http://nimble-platform.uk-south.containers.mybluemix.net/register/health-check"
     }
   ],
   "databases": [

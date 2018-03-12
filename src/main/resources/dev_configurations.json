@@ -26,5 +26,9 @@
       "envPassword": "POSTGRES_PASSWORD",
       "envUrl": "POSTGRES_URL"
     }
-  ]
+  ],
+  "messageHub": {
+    "envCredentials": "MESSAGE_HUB_CREDENTIALS",
+    "testTopic": "health-test-topic"
+  }
 }

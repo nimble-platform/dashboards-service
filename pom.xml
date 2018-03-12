@@ -60,6 +60,11 @@
             <version>42.2.1</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.12</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-services</artifactId>
             <version>3.4.3.Final</version>
@@ -78,16 +83,19 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>jaxrs-api</artifactId>
+            <scope>provided</scope>
             <version>${resteasy.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
+            <scope>provided</scope>
             <version>${resteasy.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jackson-provider</artifactId>
+            <scope>provided</scope>
             <version>${resteasy.version}</version>
         </dependency>
     </dependencies>

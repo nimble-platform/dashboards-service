@@ -1,16 +1,12 @@
 package common;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.keycloak.OAuth2Constants;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
+import checks.MessageHubHealthCheck;
+import com.google.gson.Gson;
+import configs.MessageHubCredentials;
 
-import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Properties;
 
 /**
  * Created by evgeniyh on 1/18/18.
@@ -18,7 +14,21 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
+//        String json = System.getenv("M");
+//        System.out.println(json);
+//        MessageHubCredentials credentials = (new Gson()).fromJson(json, MessageHubCredentials.class);
+//        System.out.println(credentials.getRestUrl());
+//        System.out.println(credentials.getInstanceId());
+//        System.out.println(Arrays.toString(credentials.getBrokers()));
+        try (InputStream inputStream = MessageHubHealthCheck.class.getClassLoader().getResourceAsStream("consumer.properties")) {
 
+            Properties prop = new Properties();
+            prop.load(inputStream);
+            System.out.println(prop);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
     }
 
 //        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {

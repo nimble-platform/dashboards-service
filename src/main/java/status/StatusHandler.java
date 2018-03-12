@@ -4,7 +4,9 @@ import checks.BasicHealthChecker;
 import checks.CheckResult;
 import checks.DBHealthCheck;
 import checks.HealthChecker;
+import checks.MessageHubHealthCheck;
 import configs.DatabaseConfig;
+import configs.MessageHubConfig;
 import configs.ServiceConfig;
 import org.apache.log4j.Logger;
 
@@ -21,13 +23,17 @@ public class StatusHandler {
     private final static Logger logger = Logger.getLogger(StatusHandler.class);
 
     private final Map<String, HealthStatus> serviceToStatus = new HashMap<>();
+    private final Map<String, HealthChecker> healthChecks = new HashMap<>();
+
     private final Object statusSync = new Object();
 
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
 
-    public StatusHandler(int frequencyInSec, List<ServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck) {
-        Map<String, HealthChecker> healthChecks = new HashMap<>();
+    public StatusHandler(int frequencyInSec, List<ServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig) {
+
+        healthChecks.put("Message Hub", new MessageHubHealthCheck(messageHubConfig));
+        serviceToStatus.put("Message Hub", new HealthStatus());
 
         for (ServiceConfig sc : serviceToCheck) {
             healthChecks.put(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()));
@@ -41,6 +47,10 @@ public class StatusHandler {
 
         startChecksThread(frequencyInSec * 60 * 1000, healthChecks);
         logger.info("The check thread has been started");
+    }
+
+    private void addToMaps(String serviceName, HealthChecker checker) {
+
     }
 
     private void startChecksThread(int sleepDuration, Map<String, HealthChecker> serviceToCheck) {
@@ -57,6 +67,7 @@ public class StatusHandler {
                             serviceToCheckResult.put(service, result);
                         });
 
+                        logger.info("Running check is completed");
                         synchronized (statusSync) {
                             serviceToCheckResult.forEach((k, v) -> serviceToStatus.get(k).updateLastCheck(v));
                         }

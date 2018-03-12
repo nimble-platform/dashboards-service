@@ -104,7 +104,7 @@ public class MessageHubHealthCheck implements HealthChecker {
 
     private void waitUntilMessageReceived(KafkaConsumer<String, String> consumer, KafkaProducer<String, String> producer) {
         final Object sync = new Object();
-        messageReceived = true;
+        messageReceived = false;
         String sentMessage = UUID.randomUUID().toString();
 
         Thread t = new Thread(() -> {

@@ -1,5 +1,5 @@
 {
-  "frequency": 30,
+  "frequency": 60,
   "services": [
     {
       "name": "ERROR-SERVICE",

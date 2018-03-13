@@ -43,7 +43,7 @@ public class StatusHandler {
             addNewService(dbc.getName(), new DBHealthCheck(dbc.getName(), dbc));
         }
 
-        startChecksThread(frequencyInSec * 60 * 1000, healthChecks);
+        startChecksThread(frequencyInSec * 1000, healthChecks);
         logger.info("The check thread has been started");
     }
 

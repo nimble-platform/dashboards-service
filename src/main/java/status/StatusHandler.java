@@ -50,29 +50,26 @@ public class StatusHandler {
     }
 
     private void startChecksThread(int sleepDuration, Map<String, HealthChecker> serviceToCheck) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Map<String, CheckResult> serviceToCheckResult = new HashMap<>();
-                        logger.info("Running checks");
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Map<String, CheckResult> serviceToCheckResult = new HashMap<>();
+                    logger.info("Running checks");
 
-                        serviceToCheck.forEach((service, check) -> {
-                            CheckResult result = check.runCheck();
-                            serviceToCheckResult.put(service, result);
-                        });
+                    serviceToCheck.forEach((service, check) -> {
+                        CheckResult result = check.runCheck();
+                        serviceToCheckResult.put(service, result);
+                    });
 
-                        logger.info("Running check is completed");
-                        synchronized (statusSync) {
-                            serviceToCheckResult.forEach((k, v) -> serviceToStatus.get(k).updateLastCheck(v));
-                        }
-                        logger.info("Sleeping for - " + sleepDuration);
-                        Thread.sleep(sleepDuration);
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                        logger.error("Failure during execution of the health checks thread", t);
+                    logger.info("Running check is completed");
+                    synchronized (statusSync) {
+                        serviceToCheckResult.forEach((k, v) -> serviceToStatus.get(k).updateLastCheck(v));
                     }
+                    logger.info("Sleeping for - " + sleepDuration);
+                    Thread.sleep(sleepDuration);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    logger.error("Failure during execution of the health checks thread", t);
                 }
             }
         }).start();

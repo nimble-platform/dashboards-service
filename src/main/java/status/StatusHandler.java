@@ -49,17 +49,13 @@ public class StatusHandler {
         logger.info("The check thread has been started");
     }
 
-    private void addToMaps(String serviceName, HealthChecker checker) {
-
-    }
-
     private void startChecksThread(int sleepDuration, Map<String, HealthChecker> serviceToCheck) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Map<String, CheckResult> serviceToCheckResult = new HashMap<>();
-                    while (true) {
+                while (true) {
+                    try {
+                        Map<String, CheckResult> serviceToCheckResult = new HashMap<>();
                         logger.info("Running checks");
 
                         serviceToCheck.forEach((service, check) -> {
@@ -73,10 +69,10 @@ public class StatusHandler {
                         }
                         logger.info("Sleeping for - " + sleepDuration);
                         Thread.sleep(sleepDuration);
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                        logger.error("Failure during execution of the health checks thread", t);
                     }
-                } catch (Exception ex) {
-                    logger.error("Failure during execution of the health checks thread", ex);
-                    run();
                 }
             }
         }).start();

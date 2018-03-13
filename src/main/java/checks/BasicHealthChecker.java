@@ -21,25 +21,25 @@ import java.security.cert.X509Certificate;
  * Created by evgeniyh on 2/8/18.
  */
 
-public class BasicHealthChecker implements HealthChecker {
+public class BasicHealthChecker extends AbstractHealthChecker {
     private final static Logger logger = Logger.getLogger(BasicHealthChecker.class);
 
     private final String healthUrl;
-    private final String serviceName;
 
     public BasicHealthChecker(String serviceName, String healthUrl) {
-        if (isNullOrEmpty(serviceName) || isNullOrEmpty(healthUrl)) {
-            throw new NullPointerException("Service name and health url cannot be empty");
-        }
-
-        this.serviceName = serviceName;
+        super(serviceName);
         this.healthUrl = healthUrl;
     }
 
     @Override
-    public CheckResult runCheck() {
-        logger.info("Running health check for - " + serviceName);
+    protected void initSpecific() throws Exception {
+        if (isNullOrEmpty(healthUrl)) {
+            throw new Exception("Health url cannot be empty");
+        }
+    }
 
+    @Override
+    protected CheckResult runSpecificCheck() throws Exception {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpGet getHealth = new HttpGet(healthUrl);
             CloseableHttpResponse response = httpclient.execute(getHealth);
@@ -50,18 +50,15 @@ public class BasicHealthChecker implements HealthChecker {
             String res = Common.inputStreamToString(response.getEntity().getContent());
             logger.info("For - " + healthUrl + " response is " + res);
 
-            CheckResult result = CheckResult.createResult(response.getStatusLine().getStatusCode(), res, "OK");
-            CheckResult.logResult(serviceName, result);
-
-            return result;
-        } catch (Throwable e) {
-            e.printStackTrace();
-            logger.error("Exception during health check of service " + serviceName, e);
-            Throwable t = e.getCause();
-            String exceptionMessage = (t == null) ? e.getMessage() : t.getMessage();
-            return new CheckResult(CheckResult.Result.BAD, "Exception - " + exceptionMessage);
+            return CheckResult.createResult(response.getStatusLine().getStatusCode(), res, "OK");
         }
     }
+
+
+//    @Override
+//    public CheckResult runCheck() {
+//
+//    }
     // Untrusted connection (without tls)
 
 //    SSLContextBuilder builder = new SSLContextBuilder();

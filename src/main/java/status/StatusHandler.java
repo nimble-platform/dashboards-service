@@ -32,21 +32,30 @@ public class StatusHandler {
 
     public StatusHandler(int frequencyInSec, List<ServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig) {
 
-        healthChecks.put("Message Hub", new MessageHubHealthCheck(messageHubConfig));
-        serviceToStatus.put("Message Hub", new HealthStatus());
+        //TODO: add interface to configs to get the service name
+
+        addNewService(messageHubConfig.getMessageHubName(), new MessageHubHealthCheck(messageHubConfig.getMessageHubName(), messageHubConfig));
 
         for (ServiceConfig sc : serviceToCheck) {
-            healthChecks.put(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()));
-            serviceToStatus.put(sc.getName(), new HealthStatus());
+            addNewService(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()));
         }
-
         for (DatabaseConfig dbc : dbsToCheck) {
-            healthChecks.put(dbc.getName(), new DBHealthCheck(dbc));
-            serviceToStatus.put(dbc.getName(), new HealthStatus());
+            addNewService(dbc.getName(), new DBHealthCheck(dbc.getName(), dbc));
         }
 
         startChecksThread(frequencyInSec * 60 * 1000, healthChecks);
         logger.info("The check thread has been started");
+    }
+
+    private void addNewService(String serviceName, HealthChecker healthChecker) {
+        try {
+            healthChecker.init();
+            healthChecks.put(serviceName, healthChecker);
+            serviceToStatus.put(serviceName, new HealthStatus());
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.info("Failed to initialize health check for service - " + serviceName);
+        }
     }
 
     private void startChecksThread(int sleepDuration, Map<String, HealthChecker> serviceToCheck) {

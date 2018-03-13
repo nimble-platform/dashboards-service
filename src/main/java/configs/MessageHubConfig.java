@@ -5,12 +5,18 @@ package configs;
  */
 
 public class MessageHubConfig {
+    private final String messageHubName;
     private final String envCredentials;
     private final String testTopic;
 
-    public MessageHubConfig(String envCredentials, String testTopic) {
+    public MessageHubConfig(String messageHubName, String envCredentials, String testTopic) {
+        this.messageHubName = messageHubName;
         this.envCredentials = envCredentials;
         this.testTopic = testTopic;
+    }
+
+    public String getMessageHubName() {
+        return messageHubName;
     }
 
     public String getEnvCredentials() {

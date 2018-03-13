@@ -13,51 +13,37 @@ import java.sql.SQLException;
  * Created by evgeniyh on 2/8/18.
  */
 
-public class DBHealthCheck implements HealthChecker {
-    private final static Logger logger = Logger.getLogger(DBHealthCheck.class);
+public class DBHealthCheck extends AbstractHealthChecker {
+    private final DatabaseConfig dbcConfig;
 
     private String connectionUrl;
 
-    public DBHealthCheck(DatabaseConfig dbc) {
-        try {
-            Class.forName(dbc.getDriverName()); // Check that the driver is ok
-
-            String user = System.getenv(dbc.getEnvUsername());
-            String password = System.getenv(dbc.getEnvPassword());
-            String url = System.getenv(dbc.getEnvUrl());
-
-            if (Common.isNullOrEmpty(user) || Common.isNullOrEmpty(url) || Common.isNullOrEmpty(password)) {
-                throw new Exception("Credential values can't be null or empty");
-            }
-
-            this.connectionUrl = String.format("jdbc:postgresql://%s?user=%s&password=%s", url, user, password);
-        } catch (Throwable e) {
-            e.printStackTrace();
-            this.connectionUrl = null;
-        }
+    public DBHealthCheck(String dbName, DatabaseConfig dbcConfig) {
+        super(dbName);
+        this.dbcConfig = dbcConfig;
     }
 
     @Override
-    public CheckResult runCheck() {
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection(connectionUrl);
+    protected void initSpecific() throws Exception {
+        Class.forName(dbcConfig.getDriverName()); // Check that the driver is ok
 
+        String user = System.getenv(dbcConfig.getEnvUsername());
+        String password = System.getenv(dbcConfig.getEnvPassword());
+        String url = System.getenv(dbcConfig.getEnvUrl());
+
+        if (Common.isNullOrEmpty(user) || Common.isNullOrEmpty(url) || Common.isNullOrEmpty(password)) {
+            throw new Exception("Credential values can't be null or empty");
+        }
+
+        this.connectionUrl = String.format("jdbc:postgresql://%s?user=%s&password=%s", url, user, password);
+    }
+
+    @Override
+    protected CheckResult runSpecificCheck() throws Exception {
+        try (Connection connection = DriverManager.getConnection(connectionUrl)) {
             return (connection.isValid(5)) ?
                     new CheckResult(CheckResult.Result.GOOD, null) :
                     new CheckResult(CheckResult.Result.BAD, "Failed to test connection to the database");
-
-        } catch (Exception e) {
-            logger.error("Failed to connect to the db", e);
-            return new CheckResult(CheckResult.Result.BAD, e.toString());
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package checks;
 
 import com.google.gson.Gson;
+import common.Common;
 import configs.MessageHubConfig;
 import configs.MessageHubCredentials;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -21,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.rmi.activation.ActivationGroupDesc;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -36,7 +38,7 @@ import static org.apache.kafka.common.protocol.CommonFields.GROUP_ID;
  * Created by evgeniyh on 2/19/18.
  */
 
-public class MessageHubHealthCheck implements HealthChecker {
+public class MessageHubHealthCheck extends AbstractHealthChecker {
     private final static Logger logger = Logger.getLogger(MessageHubHealthCheck.class);
 
     private final String CONSUMER_FILE = "consumer.properties";
@@ -46,23 +48,38 @@ public class MessageHubHealthCheck implements HealthChecker {
 
     private final String JAAS_CONFIG_PROPERTY = "java.security.auth.login.config";
 
-    private final String healthTopic;
 
-    private final Properties consumerProperties;
-    private final Properties producerProperties;
+    private final MessageHubConfig messageHubConfig;
+    private String healthTopic;
 
-    public MessageHubHealthCheck(MessageHubConfig messageHubConfig) {
+    private Properties consumerProperties;
+    private Properties producerProperties;
+
+    public MessageHubHealthCheck(String name, MessageHubConfig messageHubConfig) {
+        super(name);
+        this.messageHubConfig = messageHubConfig;
+
+    }
+
+    @Override
+    protected void initSpecific() throws Exception {
+        String envCredentials = System.getenv(messageHubConfig.getEnvCredentials());
+        healthTopic = messageHubConfig.getTestTopic();
+
+        if (Common.isNullOrEmpty(healthTopic)) {
+            throw new Exception("Health topic can't be null or empty");
+        }
+        if (Common.isNullOrEmpty(envCredentials)) {
+            throw new Exception("Missing message hub credentials in the environment");
+        }
         consumerProperties = loadProperties(CONSUMER_FILE);
         producerProperties = loadProperties(PRODUCER_FILE);
-        healthTopic = messageHubConfig.getTestTopic();
 
         InputStream template = MessageHubHealthCheck.class.getClassLoader().getResourceAsStream(JAAS_TEMPLATE_FILE);
         String jaasTemplate = new BufferedReader(new InputStreamReader(template)).lines().parallel().collect(Collectors.joining("\n"));
 
         System.setProperty(JAAS_CONFIG_PROPERTY, JAAS_TARGET_FILE);
 
-        String envCredentials = System.getenv(messageHubConfig.getEnvCredentials());
-        logger.info(envCredentials);
         MessageHubCredentials credentials = (new Gson()).fromJson(envCredentials, MessageHubCredentials.class);
 
         try (OutputStream jaasOutStream = new FileOutputStream(JAAS_TARGET_FILE, false)) {
@@ -74,14 +91,12 @@ public class MessageHubHealthCheck implements HealthChecker {
             logger.info("Successfully updated and set the JAAS credentials");
         } catch (Throwable t) {
             logger.error("Failed to set JAAS access credentials", t);
+            throw t;
         }
     }
 
     @Override
-    public CheckResult runCheck() {
-        if (consumerProperties == null || producerProperties == null) {
-            return new CheckResult(CheckResult.Result.BAD, "Failed to initialize the properties");
-        }
+    protected CheckResult runSpecificCheck() throws Exception {
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProperties);
              KafkaProducer<String, String> producer = new KafkaProducer<>(producerProperties)) {
 
@@ -94,9 +109,6 @@ public class MessageHubHealthCheck implements HealthChecker {
             //TODO: maybe add timeout for the check
 
             return new CheckResult(CheckResult.Result.GOOD, null);
-        } catch (Throwable t) {
-            logger.error("Error during test of message hub", t);
-            return new CheckResult(CheckResult.Result.BAD, "Exception during test - " + t.getMessage());
         }
     }
 
@@ -156,7 +168,7 @@ public class MessageHubHealthCheck implements HealthChecker {
 
     }
 
-    private Properties loadProperties(String file) {
+    private Properties loadProperties(String file) throws Exception {
         try (InputStream inputStream = MessageHubHealthCheck.class.getClassLoader().getResourceAsStream(file)) {
 
             Properties prop = new Properties();
@@ -165,7 +177,7 @@ public class MessageHubHealthCheck implements HealthChecker {
         } catch (Throwable e) {
             logger.error("Failed to load properties for - " + file);
             e.printStackTrace();
-            return null;
+            throw e;
         }
     }
 }

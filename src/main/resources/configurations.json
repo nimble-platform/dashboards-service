@@ -24,6 +24,7 @@
     }
   ],
   "messageHub": {
+    "messageHubName": "Message Hub Nimble",
     "envCredentials": "MESSAGE_HUB_CREDENTIALS",
     "testTopic": "health-test-topic"
   }

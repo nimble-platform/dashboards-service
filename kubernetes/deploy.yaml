@@ -21,7 +21,7 @@ spec:
         app: dashboards-service
     spec:
       containers:
-      - image: nimbleplatform/dashboards-service:13
+      - image: nimbleplatform/dashboards-service:IMAGE_TAG
         imagePullPolicy: Always
         name: dashboards-service
         env:

@@ -52,7 +52,7 @@ public class StatusDashboard extends Application {
 
         StatusConfigurations configurations = (new Gson()).fromJson(jsonConfig, StatusConfigurations.class);
 
-        handler = new StatusHandler(configurations.getFrequency(), configurations.getServices(), configurations.getDatabases(), configurations.getMessageHub());
+        handler = new StatusHandler(configurations.getFrequency(), configurations.getServices(), configurations.getDatabases(), configurations.getMessageHub(), configurations.getObjectStore());
     }
 
     @GET

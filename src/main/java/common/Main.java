@@ -1,8 +1,10 @@
 package common;
 
 import checks.MessageHubHealthCheck;
+import checks.ObjectStoreHealthChecker;
 import com.google.gson.Gson;
 import configs.MessageHubCredentials;
+import configs.ObjectStoreConfig;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -20,15 +22,24 @@ public class Main {
 //        System.out.println(credentials.getRestUrl());
 //        System.out.println(credentials.getInstanceId());
 //        System.out.println(Arrays.toString(credentials.getBrokers()));
-        try (InputStream inputStream = MessageHubHealthCheck.class.getClassLoader().getResourceAsStream("consumer.properties")) {
+//        try (InputStream inputStream = MessageHubHealthCheck.class.getClassLoader().getResourceAsStream("consumer.properties")) {
+//
+//            Properties prop = new Properties();
+//            prop.load(inputStream);
+//            System.out.println(prop);
+//        } catch (Throwable e) {
+//            e.printStackTrace();
+//            System.out.println(e.getMessage());
+//        }
 
-            Properties prop = new Properties();
-            prop.load(inputStream);
-            System.out.println(prop);
-        } catch (Throwable e) {
+        try {
+            ObjectStoreHealthChecker h = new ObjectStoreHealthChecker("asd", new ObjectStoreConfig("asd", "OBJECT_STORE_CREDENTIALS", "test", "health-test-file"));
+            h.init();
+            h.runCheck();
+        } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(e.getMessage());
         }
+
     }
 
 //        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {

@@ -5,8 +5,10 @@ import checks.CheckResult;
 import checks.DBHealthCheck;
 import checks.HealthChecker;
 import checks.MessageHubHealthCheck;
+import checks.ObjectStoreHealthChecker;
 import configs.DatabaseConfig;
 import configs.MessageHubConfig;
+import configs.ObjectStoreConfig;
 import configs.ServiceConfig;
 import org.apache.log4j.Logger;
 
@@ -30,10 +32,11 @@ public class StatusHandler {
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
 
-    public StatusHandler(int frequencyInSec, List<ServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig) {
+    public StatusHandler(int frequencyInSec, List<ServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig, ObjectStoreConfig objectStore) {
 
         //TODO: add interface to configs to get the service name
 
+        addNewService(objectStore.getObjectStoreName(), new ObjectStoreHealthChecker(objectStore.getObjectStoreName(), objectStore));
         addNewService(messageHubConfig.getMessageHubName(), new MessageHubHealthCheck(messageHubConfig.getMessageHubName(), messageHubConfig));
 
         for (ServiceConfig sc : serviceToCheck) {

@@ -31,5 +31,11 @@
     "messageHubName": "Message Hub Nimble",
     "envCredentials": "MESSAGE_HUB_CREDENTIALS",
     "testTopic": "health-test-topic"
+  },
+  "objectStore": {
+    "objectStoreName": "Object Store Nimble",
+    "envCredentials": "OBJECT_STORE_CREDENTIALS",
+    "containerName": "test",
+    "fileName": "health-test-file"
   }
 }

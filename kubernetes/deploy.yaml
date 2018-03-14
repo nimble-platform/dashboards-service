@@ -21,7 +21,7 @@ spec:
         app: dashboards-service
     spec:
       containers:
-      - image: nimbleplatform/dashboards-service:IMAGE_TAG
+      - image: nimbleplatform/dashboards-service:13
         imagePullPolicy: Always
         name: dashboards-service
         env:
@@ -43,10 +43,10 @@ spec:
               name: postgres-credentials
               key: password
         - name: MESSAGE_HUB_CREDENTIALS
-            valueFrom:
-              secretKeyRef:
-                name: messagehub-credentials
-                key: credentials.json
+          valueFrom:
+            secretKeyRef:
+              name: messagehub-credentials
+              key: credentials.json
         ports:
         - containerPort: 8080
           name: http

@@ -7,27 +7,20 @@ import static common.Common.isNullOrEmpty;
 import common.Common;
 import configs.ObjectStoreConfig;
 import configs.ObjectStoreCredentials;
-import jdk.internal.util.xml.impl.Input;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.storage.ObjectStorageService;
 import org.openstack4j.model.common.ActionResponse;
-import org.openstack4j.model.common.DLPayload;
 import org.openstack4j.model.common.Identifier;
 import org.openstack4j.model.common.Payload;
 import org.openstack4j.model.identity.v3.Token;
 import org.openstack4j.model.storage.object.SwiftObject;
 import org.openstack4j.openstack.OSFactory;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**

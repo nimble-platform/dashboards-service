@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -101,7 +102,7 @@ public class ObjectStoreHealthChecker extends AbstractHealthChecker {
         ObjectStorageService objectStorage = OSFactory.clientFromToken(token).objectStorage();
 
         String randomUid = UUID.randomUUID().toString();
-        InputStream stream = new ByteArrayInputStream(randomUid.getBytes(StandardCharsets.UTF_8));
+        InputStream stream = new ByteArrayInputStream(randomUid.getBytes(Charset.forName("UTF-8")));
 
         Payload<InputStream> payload = new PayloadImpl(stream);
         objectStorage.objects().put(containerName, filename, payload);

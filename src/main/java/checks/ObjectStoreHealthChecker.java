@@ -1,9 +1,6 @@
 package checks;
 
 import com.google.gson.Gson;
-
-import static common.Common.isNullOrEmpty;
-
 import common.Common;
 import configs.ObjectStoreConfig;
 import configs.ObjectStoreCredentials;
@@ -22,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.UUID;
+
+import static common.Common.isNullOrEmpty;
 
 /**
  * Created by evgeniyh on 3/13/18.
@@ -43,8 +42,8 @@ public class ObjectStoreHealthChecker extends AbstractHealthChecker {
     private String filename;
     private String containerName;
 
-    public ObjectStoreHealthChecker(String serviceName, ObjectStoreConfig objectStoreConfig) {
-        super(serviceName);
+    public ObjectStoreHealthChecker(ObjectStoreConfig objectStoreConfig) {
+        super(objectStoreConfig.getName());
         this.objectStoreConfig = objectStoreConfig;
     }
 

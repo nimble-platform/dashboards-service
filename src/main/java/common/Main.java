@@ -1,15 +1,5 @@
 package common;
 
-import checks.MessageHubHealthCheck;
-import checks.ObjectStoreHealthChecker;
-import com.google.gson.Gson;
-import configs.MessageHubCredentials;
-import configs.ObjectStoreConfig;
-
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Properties;
-
 /**
  * Created by evgeniyh on 1/18/18.
  */
@@ -32,13 +22,26 @@ public class Main {
 //            System.out.println(e.getMessage());
 //        }
 
-        try {
-            ObjectStoreHealthChecker h = new ObjectStoreHealthChecker("asd", new ObjectStoreConfig("asd", "OBJECT_STORE_CREDENTIALS", "test", "health-test-file"));
-            h.init();
-            h.runCheck();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//        JsonObject e = (JsonObject) new JsonParser().parse("{\n" +
+//                "        \"CATALOG-SEARCH-SERVICE\": 0,\n" +
+//                "        \"FRONTEND-SERVICE\": 1,\n" +
+//                "        \"BUSINESS-PROCESS-SERVICE\": 1,\n" +
+//                "        \"CATALOGUE-SERVICE-SRDC\": 1,\n" +
+//                "        \"IDENTITY-SERVICE\": 1,\n" +
+//                "        \"GATEWAY-PROXY\": 1\n" +
+//                "      }");
+//        String json = gson.toJson(e);
+//        System.out.println(json);
+//        System.out.println(e.get("CATALOGUE-SERVICE-SRDC").getAsBoolean());
+
+//        try {
+//            ObjectStoreHealthChecker h = new ObjectStoreHealthChecker(new ObjectStoreConfig("asd", "OBJECT_STORE_CREDENTIALS", "test", "health-test-file"));
+//            h.init();
+//            h.runCheck();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
     }
 

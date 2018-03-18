@@ -34,7 +34,7 @@ class HealthStatus {
 
     String generateHtml() {
         String date = (lastSuccess == 0) ? "Never" : dateFormatter.format(lastSuccess);
-        String title = lastCheck.getErrorMessage();
+        String title = lastCheck.getDescriptionMessage();
         if (title == null) {
             title = "";
         }

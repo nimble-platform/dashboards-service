@@ -4,7 +4,7 @@ package configs;
  * Created by evgeniyh on 2/17/18.
  */
 
-public class DatabaseConfig {
+public class DatabaseConfig implements ServiceConfig {
     private final String name;
     private final String envUsername;
     private final String envPassword;
@@ -19,6 +19,7 @@ public class DatabaseConfig {
         this.driverName = driverName;
     }
 
+    @Override
     public String getName() {
         return name;
     }

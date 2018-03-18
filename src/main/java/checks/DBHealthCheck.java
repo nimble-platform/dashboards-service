@@ -2,11 +2,9 @@ package checks;
 
 import common.Common;
 import configs.DatabaseConfig;
-import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 
 /**
@@ -18,8 +16,8 @@ public class DBHealthCheck extends AbstractHealthChecker {
 
     private String connectionUrl;
 
-    public DBHealthCheck(String dbName, DatabaseConfig dbcConfig) {
-        super(dbName);
+    public DBHealthCheck(DatabaseConfig dbcConfig) {
+        super(dbcConfig.getName());
         this.dbcConfig = dbcConfig;
     }
 

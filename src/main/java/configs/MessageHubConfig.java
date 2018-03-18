@@ -4,19 +4,22 @@ package configs;
  * Created by evgeniyh on 2/19/18.
  */
 
-public class MessageHubConfig {
-    private final String messageHubName;
+public class MessageHubConfig implements ServiceConfig {
+    private final String name;
     private final String envCredentials;
     private final String testTopic;
+    private final String consumerGroupId;
 
-    public MessageHubConfig(String messageHubName, String envCredentials, String testTopic) {
-        this.messageHubName = messageHubName;
+    public MessageHubConfig(String name, String envCredentials, String testTopic, String consumerGroupId) {
+        this.name = name;
         this.envCredentials = envCredentials;
         this.testTopic = testTopic;
+        this.consumerGroupId = consumerGroupId;
     }
 
-    public String getMessageHubName() {
-        return messageHubName;
+    @Override
+    public String getName() {
+        return name;
     }
 
     public String getEnvCredentials() {
@@ -25,5 +28,9 @@ public class MessageHubConfig {
 
     public String getTestTopic() {
         return testTopic;
+    }
+
+    public String getConsumerGroupId() {
+        return consumerGroupId;
     }
 }

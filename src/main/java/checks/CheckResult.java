@@ -1,32 +1,31 @@
 package checks;
 
 import org.apache.log4j.Logger;
-import status.StatusHandler;
 
 public class CheckResult {
     private final static Logger logger = Logger.getLogger(CheckResult.class);
 
     private final Result result;
-    private final String errorMessage;
+    private final String descriptionMessage;
 
     public Result getResult() {
         return result;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public String getDescriptionMessage() {
+        return descriptionMessage;
     }
 
-    public CheckResult(Result result, String errorMessage) {
+    public CheckResult(Result result, String descriptionMessage) {
         this.result = result;
-        this.errorMessage = errorMessage;
+        this.descriptionMessage = descriptionMessage;
     }
 
     public static void logResult(String serviceName, CheckResult result) {
         if (result.getResult().equals(CheckResult.Result.GOOD)) {
             logger.info("The health check was successful for service - " + serviceName);
         } else {
-            logger.error("Failed on the health check of service - " + serviceName + " due to - " + result.getErrorMessage());
+            logger.error("Failed on the health check of service - " + serviceName + " due to - " + result.getDescriptionMessage());
         }
     }
 

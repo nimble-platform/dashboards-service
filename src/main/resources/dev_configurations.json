@@ -28,14 +28,28 @@
     }
   ],
   "messageHub": {
-    "messageHubName": "Message Hub Nimble",
+    "name": "Message Hub Nimble",
     "envCredentials": "MESSAGE_HUB_CREDENTIALS",
-    "testTopic": "health-test-topic"
+    "testTopic": "health-test-topic",
+    "consumerGroupId": "devHealthCheck"
   },
   "objectStore": {
-    "objectStoreName": "Object Store Nimble",
+    "name": "Object Store Nimble",
     "envCredentials": "OBJECT_STORE_CREDENTIALS",
     "containerName": "test",
     "fileName": "health-test-file"
+  },
+  "eureka": {
+    "name": "Nimble Eureka<br/>Front-end<br/>Business Process<br/>Catalogue<br/>Identity<br/>Gateway-Proxy",
+    "url": "https://nimble-platform.salzburgresearch.at/nimble/health",
+    "services": [
+      "FRONTEND-SERVICE",
+      "BUSINESS-PROCESS-SERVICE",
+      "CATALOGUE-SERVICE-SRDC",
+      "IDENTITY-SERVICE",
+      "GATEWAY-PROXY",
+      "CATALOG-SEARCH-SERVICE",
+      "ERROR-NO-SERVICE"
+    ]
   }
 }

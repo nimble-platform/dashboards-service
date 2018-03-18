@@ -50,9 +50,9 @@ public class StatusDashboard extends Application {
             throw new NullPointerException("Failed to load configurations");
         }
 
-        StatusConfigurations configurations = (new Gson()).fromJson(jsonConfig, StatusConfigurations.class);
+        StatusConfigurations conf = (new Gson()).fromJson(jsonConfig, StatusConfigurations.class);
 
-        handler = new StatusHandler(configurations.getFrequency(), configurations.getServices(), configurations.getDatabases(), configurations.getMessageHub(), configurations.getObjectStore());
+        handler = new StatusHandler(conf.getFrequency(), conf.getServices(), conf.getDatabases(), conf.getMessageHub(), conf.getObjectStore(), conf.getEureka());
     }
 
     @GET
@@ -69,7 +69,7 @@ public class StatusDashboard extends Application {
         StringBuilder sb = new StringBuilder();
         List<String> services = handler.getStatusesHtmls();
         services.forEach(sb::append);
-        String completedHtml = String.format(htmlTemplate, sb.toString());
+        String completedHtml = String.format(htmlTemplate, sb.toString(), "");
 
         return Response.status(200).entity(completedHtml).build();
     }

@@ -3,13 +3,15 @@ package status;
 import checks.BasicHealthChecker;
 import checks.CheckResult;
 import checks.DBHealthCheck;
+import checks.EurekaHealthCheck;
 import checks.HealthChecker;
 import checks.MessageHubHealthCheck;
 import checks.ObjectStoreHealthChecker;
 import configs.DatabaseConfig;
+import configs.EurekaConfig;
 import configs.MessageHubConfig;
 import configs.ObjectStoreConfig;
-import configs.ServiceConfig;
+import configs.SimpleServiceConfig;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -25,6 +27,7 @@ public class StatusHandler {
     private final static Logger logger = Logger.getLogger(StatusHandler.class);
 
     private final Map<String, HealthStatus> serviceToStatus = new HashMap<>();
+    private final Map<String, HealthStatus> infrustractureToStatus = new HashMap<>();
     private final Map<String, HealthChecker> healthChecks = new HashMap<>();
 
     private final Object statusSync = new Object();
@@ -32,18 +35,17 @@ public class StatusHandler {
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
 
-    public StatusHandler(int frequencyInSec, List<ServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig, ObjectStoreConfig objectStore) {
+    public StatusHandler(int frequencyInSec, List<SimpleServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig, ObjectStoreConfig objectStore, EurekaConfig eurekaConfig) {
 
-        //TODO: add interface to configs to get the service name
+        addNewService(eurekaConfig.getName(), new EurekaHealthCheck(eurekaConfig));
+        addNewService(objectStore.getName(), new ObjectStoreHealthChecker(objectStore));
+        addNewService(messageHubConfig.getName(), new MessageHubHealthCheck(messageHubConfig));
 
-        addNewService(objectStore.getObjectStoreName(), new ObjectStoreHealthChecker(objectStore.getObjectStoreName(), objectStore));
-        addNewService(messageHubConfig.getMessageHubName(), new MessageHubHealthCheck(messageHubConfig.getMessageHubName(), messageHubConfig));
-
-        for (ServiceConfig sc : serviceToCheck) {
+        for (SimpleServiceConfig sc : serviceToCheck) {
             addNewService(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()));
         }
         for (DatabaseConfig dbc : dbsToCheck) {
-            addNewService(dbc.getName(), new DBHealthCheck(dbc.getName(), dbc));
+            addNewService(dbc.getName(), new DBHealthCheck(dbc));
         }
 
         startChecksThread(frequencyInSec * 1000, healthChecks);

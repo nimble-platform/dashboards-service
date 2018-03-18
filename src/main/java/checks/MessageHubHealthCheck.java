@@ -5,34 +5,24 @@ import common.Common;
 import configs.MessageHubConfig;
 import configs.MessageHubCredentials;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.rmi.activation.ActivationGroupDesc;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static org.apache.kafka.common.protocol.CommonFields.GROUP_ID;
 
 /**
  * Created by evgeniyh on 2/19/18.
@@ -55,8 +45,8 @@ public class MessageHubHealthCheck extends AbstractHealthChecker {
     private Properties consumerProperties;
     private Properties producerProperties;
 
-    public MessageHubHealthCheck(String name, MessageHubConfig messageHubConfig) {
-        super(name);
+    public MessageHubHealthCheck(MessageHubConfig messageHubConfig) {
+        super(messageHubConfig.getName());
         this.messageHubConfig = messageHubConfig;
 
     }
@@ -72,7 +62,12 @@ public class MessageHubHealthCheck extends AbstractHealthChecker {
         if (Common.isNullOrEmpty(envCredentials)) {
             throw new Exception("Missing message hub credentials in the environment");
         }
+        if (Common.isNullOrEmpty(messageHubConfig.getConsumerGroupId())) {
+            throw new Exception("Consumer group id can't be null or empty");
+        }
+
         consumerProperties = loadProperties(CONSUMER_FILE);
+        consumerProperties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, messageHubConfig.getConsumerGroupId());
         producerProperties = loadProperties(PRODUCER_FILE);
 
         InputStream template = MessageHubHealthCheck.class.getClassLoader().getResourceAsStream(JAAS_TEMPLATE_FILE);
@@ -164,8 +159,6 @@ public class MessageHubHealthCheck extends AbstractHealthChecker {
                 }
             }
         }
-
-
     }
 
     private Properties loadProperties(String file) throws Exception {

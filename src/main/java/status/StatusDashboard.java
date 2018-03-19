@@ -67,9 +67,17 @@ public class StatusDashboard extends Application {
         logger.info("Creating status dashboard");
 
         StringBuilder sb = new StringBuilder();
-        List<String> services = handler.getStatusesHtmls();
-        services.forEach(sb::append);
-        String completedHtml = String.format(htmlTemplate, sb.toString(), "");
+        List<String> servicesHtmls = handler.getServicesStatusesHtmls();
+        servicesHtmls.forEach(sb::append);
+        String servicesHtml = sb.toString();
+
+        sb.setLength(0);
+
+        List<String> infrastructures = handler.getInfrastructureStatusesHtmls();
+        infrastructures.forEach(sb::append);
+        String infrastructuresHtmls = sb.toString();
+
+        String completedHtml = String.format(htmlTemplate, servicesHtml, infrastructuresHtmls);
 
         return Response.status(200).entity(completedHtml).build();
     }

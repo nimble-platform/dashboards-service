@@ -27,57 +27,67 @@ public class StatusHandler {
     private final static Logger logger = Logger.getLogger(StatusHandler.class);
 
     private final Map<String, HealthStatus> serviceToStatus = new HashMap<>();
-    private final Map<String, HealthStatus> infrustractureToStatus = new HashMap<>();
-    private final Map<String, HealthChecker> healthChecks = new HashMap<>();
+    private final Map<String, HealthStatus> infrastructureToStatus = new HashMap<>();
 
-    private final Object statusSync = new Object();
+    private final Map<String, HealthChecker> servicesCheckers = new HashMap<>();
+    private final Map<String, HealthChecker> infrastructuresCheckers = new HashMap<>();
+
+    private final Object infrastructureSync = new Object();
+    private final Object servicesSync = new Object();
 
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
 
     public StatusHandler(int frequencyInSec, List<SimpleServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig, ObjectStoreConfig objectStore, EurekaConfig eurekaConfig) {
 
-        addNewService(eurekaConfig.getName(), new EurekaHealthCheck(eurekaConfig));
-        addNewService(objectStore.getName(), new ObjectStoreHealthChecker(objectStore));
-        addNewService(messageHubConfig.getName(), new MessageHubHealthCheck(messageHubConfig));
+        addNewService(eurekaConfig.getName(), new EurekaHealthCheck(eurekaConfig), false);
+        addNewService(objectStore.getName(), new ObjectStoreHealthChecker(objectStore), true);
+        addNewService(messageHubConfig.getName(), new MessageHubHealthCheck(messageHubConfig), true);
 
         for (SimpleServiceConfig sc : serviceToCheck) {
-            addNewService(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()));
+            addNewService(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()), false);
         }
         for (DatabaseConfig dbc : dbsToCheck) {
-            addNewService(dbc.getName(), new DBHealthCheck(dbc));
+            addNewService(dbc.getName(), new DBHealthCheck(dbc), true);
         }
 
-        startChecksThread(frequencyInSec * 1000, healthChecks);
+        startChecksThread(frequencyInSec * 1000, servicesSync, servicesCheckers, serviceToStatus);
+        startChecksThread(frequencyInSec * 1000, infrastructureSync, infrastructuresCheckers, infrastructureToStatus);
         logger.info("The check thread has been started");
     }
 
-    private void addNewService(String serviceName, HealthChecker healthChecker) {
+    private void addNewService(String serviceName, HealthChecker healthChecker, boolean isInfrastructure) {
         try {
             healthChecker.init();
-            healthChecks.put(serviceName, healthChecker);
-            serviceToStatus.put(serviceName, new HealthStatus());
+
+            if (isInfrastructure) {
+                infrastructureToStatus.put(serviceName, new HealthStatus());
+                infrastructuresCheckers.put(serviceName, healthChecker);
+            } else {
+                serviceToStatus.put(serviceName, new HealthStatus());
+                servicesCheckers.put(serviceName, healthChecker);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             logger.info("Failed to initialize health check for service - " + serviceName);
         }
     }
 
-    private void startChecksThread(int sleepDuration, Map<String, HealthChecker> serviceToCheck) {
+    private void startChecksThread(int sleepDuration, Object sync, Map<String, HealthChecker> checks, Map<String, HealthStatus> statuses) {
         new Thread(() -> {
             while (true) {
                 try {
                     Map<String, CheckResult> serviceToCheckResult = new HashMap<>();
-                    logger.info("Running checks");
+                    logger.info("Running health checks checks");
 
-                    serviceToCheck.forEach((service, check) -> {
+                    checks.forEach((service, check) -> {
                         CheckResult result = check.runCheck();
                         serviceToCheckResult.put(service, result);
                     });
 
-                    logger.info("Running check is completed");
-                    synchronized (statusSync) {
-                        serviceToCheckResult.forEach((k, v) -> serviceToStatus.get(k).updateLastCheck(v));
+                    logger.info("Running health checks is completed");
+                    synchronized (sync) {
+                        serviceToCheckResult.forEach((k, v) -> statuses.get(k).updateLastCheck(v));
                     }
                     logger.info("Sleeping for - " + sleepDuration);
                     Thread.sleep(sleepDuration);
@@ -89,9 +99,15 @@ public class StatusHandler {
         }).start();
     }
 
-    public List<String> getStatusesHtmls() {
-        synchronized (statusSync) {
+    public List<String> getServicesStatusesHtmls() {
+        synchronized (servicesSync) {
             return serviceToStatus.entrySet().stream().map(e -> String.format(statusRowTemplate, e.getKey(), e.getValue().generateHtml())).collect(Collectors.toList());
+        }
+    }
+
+    public List<String> getInfrastructureStatusesHtmls() {
+        synchronized (infrastructureSync) {
+            return infrastructureToStatus.entrySet().stream().map(e -> String.format(statusRowTemplate, e.getKey(), e.getValue().generateHtml())).collect(Collectors.toList());
         }
     }
 }

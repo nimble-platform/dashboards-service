@@ -20,8 +20,6 @@ spec:
       labels:
         app: dashboards-service
     spec:
-      serviceAccount: jenkins-slave-sa
-      serviceAccountName: jenkins-slave-sa
       containers:
       - image: nimbleplatform/dashboards-service:IMAGE_TAG
         imagePullPolicy: Always

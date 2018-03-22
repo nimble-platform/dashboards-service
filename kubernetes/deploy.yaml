@@ -20,6 +20,7 @@ spec:
       labels:
         app: dashboards-service
     spec:
+      serviceAccountName: dashboards-account
       containers:
       - image: nimbleplatform/dashboards-service:IMAGE_TAG
         imagePullPolicy: Always

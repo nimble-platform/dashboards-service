@@ -40,7 +40,7 @@
     "fileName": "health-test-file"
   },
   "eureka": {
-    "name": "Nimble Eureka<br/>Front-end<br/>Business Process<br/>Catalogue<br/>Identity<br/>Gateway-Proxy",
+    "name": "Nimble Eureka",
     "url": "https://nimble-platform.salzburgresearch.at/nimble/health",
     "services": [
       "FRONTEND-SERVICE",

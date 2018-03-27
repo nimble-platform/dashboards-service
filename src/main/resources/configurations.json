@@ -2,7 +2,7 @@
   "frequency": 60,
   "services": [
     {
-      "name": "ERROR-SERVICE",
+      "name": "ERROR-SERVICE (to show failure)",
       "url": "http://no-service-url"
     },
     {
@@ -36,7 +36,7 @@
     "fileName": "health-test-file"
   },
   "eureka": {
-    "name": "Nimble Eureka<br/>Front-end<br/>Business Process<br/>Catalogue<br/>Identity<br/>Gateway-Proxy",
+    "name": "Nimble Eureka",
     "url": "https://nimble-platform.salzburgresearch.at/nimble/health",
     "services": [
       "FRONTEND-SERVICE",
@@ -45,7 +45,7 @@
       "IDENTITY-SERVICE",
       "GATEWAY-PROXY",
       "CATALOG-SEARCH-SERVICE",
-      "ERROR-NO-SERVICE"
+      "ERROR-NO-SERVICE (to show missing service)"
     ]
   }
 }

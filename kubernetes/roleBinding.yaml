@@ -1,0 +1,13 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: restart-pods
+  namespace: prod
+subjects:
+- kind: ServiceAccount
+  name: dashboards-account
+  apiGroup: ""
+roleRef:
+  kind: ClusterRole
+  name: restart-pod-role
+  apiGroup: ""

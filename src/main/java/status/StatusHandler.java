@@ -35,20 +35,29 @@ public class StatusHandler {
     private final Object infrastructureSync = new Object();
     private final Object servicesSync = new Object();
 
+    private final EurekaHealthCheck eurekaHealthCheck;
+
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
 
     public StatusHandler(int frequencyInSec, List<SimpleServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig, ObjectStoreConfig objectStore, EurekaConfig eurekaConfig) {
 
-        addNewService(eurekaConfig.getName(), new EurekaHealthCheck(eurekaConfig), false);
-        addNewService(objectStore.getName(), new ObjectStoreHealthChecker(objectStore), true);
-        addNewService(messageHubConfig.getName(), new MessageHubHealthCheck(messageHubConfig), true);
+        eurekaHealthCheck = new EurekaHealthCheck(eurekaConfig);
+        if (initService(eurekaHealthCheck)) {
+            logger.info("Eureka service was initialized successfully");
+        } else {
+            logger.error("Failed to initialize Eureka service");
+        }
+
+        initAndAddService(eurekaConfig.getName(), eurekaHealthCheck, new HealthStatus(), servicesCheckers, serviceToStatus);
+        initAndAddService(objectStore.getName(), new ObjectStoreHealthChecker(objectStore), new HealthStatus(), infrastructuresCheckers, infrastructureToStatus);
+        initAndAddService(messageHubConfig.getName(), new MessageHubHealthCheck(messageHubConfig), new HealthStatus(), infrastructuresCheckers, infrastructureToStatus);
 
         for (SimpleServiceConfig sc : serviceToCheck) {
-            addNewService(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()), false);
+            initAndAddService(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()), new HealthStatus(), servicesCheckers, serviceToStatus);
         }
         for (DatabaseConfig dbc : dbsToCheck) {
-            addNewService(dbc.getName(), new DBHealthCheck(dbc), true);
+            initAndAddService(dbc.getName(), new DBHealthCheck(dbc), new HealthStatus(), infrastructuresCheckers, infrastructureToStatus);
         }
 
         startChecksThread(frequencyInSec * 1000, servicesSync, servicesCheckers, serviceToStatus);
@@ -56,20 +65,23 @@ public class StatusHandler {
         logger.info("The check thread has been started");
     }
 
-    private void addNewService(String serviceName, HealthChecker healthChecker, boolean isInfrastructure) {
-        try {
-            healthChecker.init();
+    private void initAndAddService(String service, HealthChecker checker, HealthStatus status, Map<String, HealthChecker> checkersMap, Map<String, HealthStatus> statusMap) {
+        if (!initService(checker)) {
+            logger.error("Failed to initialize health checker for service - " + service);
+        } else {
+            logger.info("Successfully initialized health check for service - " + service);
+            statusMap.put(service, status);
+            checkersMap.put(service, checker);
+        }
+    }
 
-            if (isInfrastructure) {
-                infrastructureToStatus.put(serviceName, new HealthStatus());
-                infrastructuresCheckers.put(serviceName, healthChecker);
-            } else {
-                serviceToStatus.put(serviceName, new HealthStatus());
-                servicesCheckers.put(serviceName, healthChecker);
-            }
+    private boolean initService(HealthChecker checker) {
+        try {
+            checker.init();
+            return true;
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.info("Failed to initialize health check for service - " + serviceName);
+            logger.error(e);
+            return false;
         }
     }
 
@@ -101,7 +113,10 @@ public class StatusHandler {
 
     public List<String> getServicesStatusesHtmls() {
         synchronized (servicesSync) {
-            return serviceToStatus.entrySet().stream().map(e -> String.format(statusRowTemplate, e.getKey(), e.getValue().generateHtml())).collect(Collectors.toList());
+            Map<String, HealthStatus> eurekaService = eurekaHealthCheck.getRegisteredServicesResults();
+            List<String> tmp = eurekaService.entrySet().stream().map(e -> String.format(statusRowTemplate, "Eureka (" + e.getKey() + ")", e.getValue().generateHtml())).collect(Collectors.toList());
+            tmp.addAll(serviceToStatus.entrySet().stream().map(e -> String.format(statusRowTemplate, e.getKey(), e.getValue().generateHtml())).collect(Collectors.toList()));
+            return tmp;
         }
     }
 

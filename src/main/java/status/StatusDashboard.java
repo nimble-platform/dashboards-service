@@ -13,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,15 @@ public class StatusDashboard extends Application {
     @Path("/status")
     public Response getStatisticsDashboard() {
         logger.info("Creating status dashboard");
+        try {
+            Process p = Runtime.getRuntime().exec("kubectl get pods");
+            System.out.println("************************************************************************");
 
+            System.out.println("INPUT STREAM:\n" + Common.inputStreamToString(p.getInputStream()));
+            System.out.println("ERROR STREAM:\n" + Common.inputStreamToString(p.getErrorStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         StringBuilder sb = new StringBuilder();
         List<String> servicesHtmls = handler.getServicesStatusesHtmls();
         servicesHtmls.forEach(sb::append);

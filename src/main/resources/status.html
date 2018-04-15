@@ -74,8 +74,8 @@ function reload() {
 
 function restartService(service) {
     var xhr = new XMLHttpRequest();
-    var url = location.protocol + '//' + location.host + '/restart_pod/' + service;
-    // console.log(url);
+    var url = location.protocol + '//' + location.host + location.pathname +'/../restart_pod/' + service;
+     console.log(url);
     xhr.open('POST', url, true);
     xhr.setRequestHeader('Content-type', 'text/html');
     xhr.onload = function () {

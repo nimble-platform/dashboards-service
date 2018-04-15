@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Status</title>
-</head>
-
-<style>
+    <style>
                 table.statusTable {
                         table-layout: fixed;
                         font-family: arial, sans-serif;
@@ -33,7 +31,9 @@
                 }
 
 
+
 </style>
+</head>
 
 <body>
 <br/>
@@ -65,10 +65,24 @@
 <br/>
 
 <script>
+"use strict";
 
 function reload() {
     console.log("Reloading");
     location.reload(true);
+}
+
+function restartService(service) {
+    var xhr = new XMLHttpRequest();
+    var url = location.protocol + '//' + location.host + '/restart_pod/' + service;
+    // console.log(url);
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-type', 'text/html');
+    xhr.onload = function () {
+        console.log(this.responseText);
+    };
+    xhr.send();
+    alert('Restarting ' + service);
 }
 
 </script>

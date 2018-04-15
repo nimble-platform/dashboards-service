@@ -3,15 +3,18 @@
   "services": [
     {
       "name": "ERROR-SERVICE (to show failure)",
-      "url": "http://no-service-url"
+      "url": "http://no-service-url",
+      "k8sName": "none"
     },
     {
       "name": "Messaging-Service",
-      "url": "http://messaging-service:8080/health-check"
+      "url": "http://messaging-service:8080/health-check",
+      "k8sName": "messaging-service"
     },
     {
       "name": "Registration Service",
-      "url": "http://registration-service:8080/health-check"
+      "url": "http://registration-service:8080/health-check",
+      "k8sName": "registration-service"
     }
   ],
   "databases": [

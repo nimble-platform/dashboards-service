@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import common.Common;
 import configs.EurekaConfig;
-import status.HealthStatus;
+import status.NonServiceHealthStatus;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class EurekaHealthCheck extends AbstractHealthChecker {
     private final List<String> services;
     private final String url;
-    private final Map<String, HealthStatus> serviceToResult = new HashMap<>();
+    private final Map<String, NonServiceHealthStatus> serviceToResult = new HashMap<>();
 
     public EurekaHealthCheck(EurekaConfig config) {
         super(config.getName());
@@ -36,7 +36,7 @@ public class EurekaHealthCheck extends AbstractHealthChecker {
             throw new Exception("Services can't be null or empty list");
         }
         for (String s : services) {
-            serviceToResult.put(s, new HealthStatus());
+            serviceToResult.put(s, new NonServiceHealthStatus());
         }
     }
 
@@ -78,7 +78,7 @@ public class EurekaHealthCheck extends AbstractHealthChecker {
         return new CheckResult(CheckResult.Result.GOOD, null);
     }
 
-    public Map<String, HealthStatus> getRegisteredServicesResults() {
+    public Map<String, NonServiceHealthStatus> getRegisteredServicesResults() {
         synchronized (serviceToResult) {
             return new HashMap<>(serviceToResult);
         }

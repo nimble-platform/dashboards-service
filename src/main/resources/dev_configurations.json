@@ -1,21 +1,25 @@
 {
-  "frequency": 5,
+  "frequency": 80,
   "services": [
     {
       "name": "Messaging-Service (local)",
-      "url": "http://9.148.10.164:998/health-check"
+      "url": "http://9.148.10.164:998/health-check",
+      "k8sName": "none"
     },
     {
       "name": "ERROR-SERVICE",
-      "url": "http://no-service-url"
+      "url": "http://no-service-url",
+      "k8sName": "none"
     },
     {
       "name": "Messaging-Service (Bluemix)",
-      "url": "http://nimble-platform.uk-south.containers.mybluemix.net/messaging/health-check"
+      "url": "http://nimble-platform.uk-south.containers.mybluemix.net/messaging/health-check",
+      "k8sName": "messaging-service"
     },
     {
       "name": "Registration Service",
-      "url": "http://nimble-platform.uk-south.containers.mybluemix.net/register/health-check"
+      "url": "http://nimble-platform.uk-south.containers.mybluemix.net/register/health-check",
+      "k8sName": "registration-service"
     }
   ],
   "databases": [

@@ -8,12 +8,13 @@ import org.apache.log4j.Logger;
 import javax.inject.Singleton;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,20 +62,40 @@ public class StatusDashboard extends Application {
         return Response.status(200).entity("Hello from Dashboards-Service").build();
     }
 
+    private static String COMMAND_TEMPLATE = "kubectl -n prod delete pod -l app=%s";
+
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/restart_pod/{serviceName}")
+    public Response restartService(@PathParam("serviceName") String serviceName) {
+        logger.info("Preparing to restart service name - " + serviceName);
+        String command = String.format(COMMAND_TEMPLATE, serviceName);
+
+        executeCommand(command);
+
+        return Response.status(200).entity("").build();
+    }
+
+    private void executeCommand(String command) {
+        logger.info("Executing command - " + command);
+        try {
+            Process p = Runtime.getRuntime().exec(command);
+
+            System.out.println("INPUT STREAM:\n" + Common.inputStreamToString(p.getInputStream()));
+            System.out.println("ERROR STREAM:\n" + Common.inputStreamToString(p.getErrorStream()));
+
+            logger.info("Command completed successfully");
+        } catch (Throwable t) {
+            t.printStackTrace();
+            logger.error("Failed to execute command ", t);
+        }
+    }
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/status")
     public Response getStatisticsDashboard() {
         logger.info("Creating status dashboard");
-        try {
-            Process p = Runtime.getRuntime().exec("kubectl get pods");
-            System.out.println("************************************************************************");
-
-            System.out.println("INPUT STREAM:\n" + Common.inputStreamToString(p.getInputStream()));
-            System.out.println("ERROR STREAM:\n" + Common.inputStreamToString(p.getErrorStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         StringBuilder sb = new StringBuilder();
         List<String> servicesHtmls = handler.getServicesStatusesHtmls();
         servicesHtmls.forEach(sb::append);

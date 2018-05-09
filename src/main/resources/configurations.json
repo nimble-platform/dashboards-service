@@ -12,6 +12,11 @@
       "k8sName": "messaging-service"
     },
     {
+      "name": "Data-Channels-Service",
+      "url": "http://data-channels:8080/health-check",
+      "k8sName": "data-channels"
+    },
+    {
       "name": "Registration Service",
       "url": "http://registration-service:8080/health-check",
       "k8sName": "registration-service"

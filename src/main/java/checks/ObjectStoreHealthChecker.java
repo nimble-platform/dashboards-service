@@ -31,12 +31,6 @@ public class ObjectStoreHealthChecker extends AbstractHealthChecker {
 
     private ObjectStoreConfig objectStoreConfig;
 
-    private String username;
-    private String password;
-    private String domainId;
-    private String projectId;
-    private String authUrl;
-
     private Token token;
 
     private String filename;
@@ -64,13 +58,15 @@ public class ObjectStoreHealthChecker extends AbstractHealthChecker {
         }
         ObjectStoreCredentials credentials = (new Gson()).fromJson(credentialsJson, ObjectStoreCredentials.class);
 
-        username = credentials.getUsername();
-        password = credentials.getPassword();
-        domainId = credentials.getDomainId();
-        projectId = credentials.getProjectId();
-        authUrl = credentials.getAuth_url() + "/v3";
+        String username = credentials.getUsername();
+        String password = credentials.getPassword();
+        String domainId = credentials.getDomainId();
+        String projectId = credentials.getProjectId();
+        String region = credentials.getRegion();
+        String authUrl = credentials.getAuth_url() + "/v3";
 
-        if (isNullOrEmpty(username) || isNullOrEmpty(password) || isNullOrEmpty(domainId) || isNullOrEmpty(projectId) || isNullOrEmpty(authUrl)) {
+
+        if (isNullOrEmpty(username) || isNullOrEmpty(password) || isNullOrEmpty(domainId) || isNullOrEmpty(projectId) || isNullOrEmpty(authUrl) || isNullOrEmpty(region)) {
             throw new Exception("Credentials values can't be empty");
         }
 
@@ -84,6 +80,7 @@ public class ObjectStoreHealthChecker extends AbstractHealthChecker {
                 .scopeToProject(Identifier.byId(projectId))
                 .authenticate();
 
+        os.useRegion(region);
         logger.info("Authentication was successful! - creating token");
 
         token = os.getToken();

@@ -39,7 +39,7 @@ public class Common {
             if (verifyResponseOk && response.getStatusLine().getStatusCode() != 200) {
                 throw new Exception("Response wasn't 200");
             }
-            String responseString = Common.inputStreamToString(response.getEntity().getContent());
+            String responseString = inputStreamToString(response.getEntity().getContent());
             if (logResponse) {
                 logger.info(String.format("Response for url - %s was - %s", url, responseString));
             }

@@ -7,6 +7,7 @@ import checks.EurekaHealthCheck;
 import checks.HealthChecker;
 import checks.MessageHubHealthCheck;
 import checks.ObjectStoreHealthChecker;
+import common.SlackBotHandler;
 import configs.DatabaseConfig;
 import configs.EurekaConfig;
 import configs.MessageHubConfig;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class StatusHandler {
     private final static Logger logger = Logger.getLogger(StatusHandler.class);
 
+    private static long ONE_HOUR_IN_MILLIS = 60 * 60 * 1000;
     private final Map<String, AbstractHealthStatus> serviceToStatus = new HashMap<>();
     private final Map<String, AbstractHealthStatus> infrastructureToStatus = new HashMap<>();
 
@@ -62,7 +64,46 @@ public class StatusHandler {
 
         startChecksThread(frequencyInSec * 1000, servicesSync, servicesCheckers, serviceToStatus);
         startChecksThread(frequencyInSec * 1000, infrastructureSync, infrastructuresCheckers, infrastructureToStatus);
+
+        startSlackThread();
         logger.info("The check thread has been started");
+    }
+
+    private void startSlackThread() {
+        new Thread(() -> {
+            try {
+                while (true) {
+                    StringBuilder sb = new StringBuilder();
+                    logger.info("Starting services statuses data collection");
+                    sb.append("_*Infrastructure Services:*_\n");
+                    synchronized (infrastructureSync) {
+                        infrastructureToStatus.forEach((key, value) -> insertSlackRowForService(sb, key, value));
+                    }
+                    sb.append("\n_*Platform Services:*_\n");
+                    synchronized (servicesSync) {
+                        Map<String, NonServiceHealthStatus> eurekaService = eurekaHealthCheck.getRegisteredServicesResults();
+                        eurekaService.forEach((key, value) -> insertSlackRowForService(sb, "Eureka - " + key, value));
+                        serviceToStatus.forEach((key, value) -> insertSlackRowForService(sb, key, value));
+                    }
+                    SlackBotHandler.sendMessageToChannel(sb.toString());
+                    Thread.sleep(ONE_HOUR_IN_MILLIS);
+                }
+            } catch (Throwable t) {
+                logger.error("Exception during thread of slack notification", t);
+            }
+        }).start();
+    }
+
+    private void insertSlackRowForService(StringBuilder sb, String serviceName, AbstractHealthStatus status) {
+        CheckResult res = status.getLastCheck();
+        CheckResult.Result lastResult = res.getResult();
+        sb.append(serviceName).append(" = ");
+        if (lastResult == CheckResult.Result.BAD) {
+            sb.append("*").append(lastResult).append("*").append(", Last good check was - ").append(status.getDateString());
+        } else {
+            sb.append(lastResult);
+        }
+        sb.append("\n");
     }
 
     private void initAndAddService(String service, HealthChecker checker, AbstractHealthStatus status, Map<String, HealthChecker> checkersMap, Map<String, AbstractHealthStatus> statusMap) {
@@ -85,30 +126,57 @@ public class StatusHandler {
         }
     }
 
-    private void startChecksThread(int sleepDuration, Object sync, Map<String, HealthChecker> checks, Map<String, AbstractHealthStatus> statuses) {
+    private void startChecksThread(int sleepDuration, final Object sync, Map<String, HealthChecker> checks, Map<String, AbstractHealthStatus> statuses) {
         new Thread(() -> {
+            synchronized (sync) {
+                setInitialStatuses(checks, statuses);
+            }
             while (true) {
                 try {
-                    Map<String, CheckResult> serviceToCheckResult = new HashMap<>();
-                    logger.info("Running health checks checks");
-
-                    checks.forEach((service, check) -> {
-                        CheckResult result = check.runCheck();
-                        serviceToCheckResult.put(service, result);
-                    });
-
-                    logger.info("Running health checks is completed");
+                    Map<String, CheckResult> serviceToCheckResult = runHealthChecks(checks);
                     synchronized (sync) {
-                        serviceToCheckResult.forEach((k, v) -> statuses.get(k).updateLastCheck(v));
+                        serviceToCheckResult.forEach((k, v) -> {
+                            AbstractHealthStatus serviceStatus = statuses.get(k);
+                            CheckResult.Result previous = serviceStatus.getLastCheck().getResult();
+                            if (previous != v.getResult()) {
+                                String message = generateSlackMessage(previous, k, serviceStatus.getDateString());
+                                SlackBotHandler.sendMessageToChannel(message);
+                            }
+                            statuses.get(k).setLastCheck(v);
+                        });
                     }
                     logger.info("Sleeping for - " + sleepDuration);
                     Thread.sleep(sleepDuration);
                 } catch (Throwable t) {
-                    t.printStackTrace();
                     logger.error("Failure during execution of the health checks thread", t);
                 }
             }
         }).start();
+    }
+
+    private void setInitialStatuses(Map<String, HealthChecker> checks, Map<String, AbstractHealthStatus> statuses) {
+        logger.info("Setting initial statuses for the services");
+        Map<String, CheckResult> serviceToCheckResult = runHealthChecks(checks);
+        serviceToCheckResult.forEach((k, v) -> statuses.get(k).setLastCheck(v));
+    }
+
+    private Map<String, CheckResult> runHealthChecks(Map<String, HealthChecker> checks) {
+        logger.info("Running health checks");
+        Map<String, CheckResult> serviceToCheckResult = new HashMap<>();
+
+        checks.forEach((service, check) -> {
+            CheckResult result = check.runCheck();
+            serviceToCheckResult.put(service, result);
+        });
+
+        logger.info("Running health checks is completed");
+        return serviceToCheckResult;
+    }
+
+    private String generateSlackMessage(CheckResult.Result previous, String service, String date) {
+        return (previous == CheckResult.Result.GOOD) ?
+                String.format("Service '%s' seems to go down - the last good check was on '%s'", service, date) :
+                String.format("Service '%s' has returned to healthy state - the good health check was on '%s'", service, date);
     }
 
     public List<String> getServicesStatusesHtmls() {

@@ -3,7 +3,7 @@
   "services": [
     {
       "name": "Messaging-Service (local)",
-      "url": "http://9.148.10.164:998/health-check",
+      "url": "http://9.148.10.98:998/health-check",
       "k8sName": "none"
     },
     {

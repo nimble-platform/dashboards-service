@@ -38,6 +38,11 @@ spec:
             secretKeyRef:
               name: postgres-credentials
               key: username
+        - name: BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: slack-bot
+              key: BOT_TOKEN
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:

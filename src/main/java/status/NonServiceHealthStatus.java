@@ -7,7 +7,7 @@ import checks.CheckResult;
  */
 
 public class NonServiceHealthStatus extends AbstractHealthStatus {
-    private String rawTemplate = "</td><td class=\"statusData\">%s</td><td bgcolor=\"%s\" title=\"%s\" class=\"statusData\">%s</td>";
+    private String rawTemplate = "<td class=\"statusData\">%s</td><td bgcolor=\"%s\" title=\"%s\" class=\"statusData\">%s</td>";
 
     @Override
     public String generateHtml() {

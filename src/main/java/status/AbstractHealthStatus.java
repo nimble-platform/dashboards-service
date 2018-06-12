@@ -10,8 +10,8 @@ import java.util.TimeZone;
  */
 
 public abstract class AbstractHealthStatus {
-    protected int sequencedFails = 0;
-    protected long lastSuccess = 0;
+    private int sequencedFails = 0;
+    private long lastSuccess = 0;
     protected CheckResult lastCheck;
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss (z)");
@@ -29,7 +29,7 @@ public abstract class AbstractHealthStatus {
         return (description == null) ? "" : description;
     }
 
-    public void updateLastCheck(CheckResult lastCheck) {
+    public void setLastCheck(CheckResult lastCheck) {
         this.lastCheck = lastCheck;
         if (lastCheck.getResult() == CheckResult.Result.GOOD) {
             lastSuccess = System.currentTimeMillis();
@@ -37,6 +37,10 @@ public abstract class AbstractHealthStatus {
         } else {
             sequencedFails++;
         }
+    }
+
+    public CheckResult getLastCheck() {
+        return lastCheck;
     }
 
     public abstract String generateHtml();

@@ -69,9 +69,9 @@ public class EurekaHealthCheck extends AbstractHealthChecker {
                     errorMessage = "The service seems to be down";
                 }
                 if (errorMessage != null) {
-                    serviceToResult.get(service).updateLastCheck(new CheckResult(CheckResult.Result.BAD, errorMessage));
+                    serviceToResult.get(service).setLastCheck(new CheckResult(CheckResult.Result.BAD, errorMessage));
                 } else {
-                    serviceToResult.get(service).updateLastCheck(new CheckResult(CheckResult.Result.GOOD, null));
+                    serviceToResult.get(service).setLastCheck(new CheckResult(CheckResult.Result.GOOD, null));
                 }
             }
         }

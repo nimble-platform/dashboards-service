@@ -38,7 +38,7 @@ public class SlackBotHandler {
             post.addHeader("Authorization", "Bearer " + token);
 
             JsonObject body = new JsonObject();
-            body.addProperty("channel", "CAV6BECQ4");
+            body.addProperty("channel", "CB7MH6H1V");
             body.addProperty("text", message);
 
             post.setEntity(new StringEntity(new Gson().toJson(body), Consts.UTF_8));

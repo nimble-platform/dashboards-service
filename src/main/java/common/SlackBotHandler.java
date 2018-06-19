@@ -31,6 +31,8 @@ public class SlackBotHandler {
     }
 
     public static void sendMessageToChannel(String message) {
+        logger.info("Sending message to Slack - " + message);
+
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(POST_MESSAGE_URL);
 

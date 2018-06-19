@@ -15,6 +15,7 @@ import configs.ObjectStoreConfig;
 import configs.SimpleServiceConfig;
 import org.apache.log4j.Logger;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ public class StatusHandler {
     private final Object servicesSync = new Object();
 
     private final EurekaHealthCheck eurekaHealthCheck;
+    private SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss (z)");
 
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
@@ -173,10 +175,10 @@ public class StatusHandler {
         return serviceToCheckResult;
     }
 
-    private String generateSlackMessage(CheckResult.Result previous, String service, String date) {
+    private String generateSlackMessage(CheckResult.Result previous, String service, String previousSuccessfulCheck) {
         return (previous == CheckResult.Result.GOOD) ?
-                String.format("Service '%s' seems to go down - the last good check was on '%s'", service, date) :
-                String.format("Service '%s' has returned to healthy state - the good health check was on '%s'", service, date);
+                String.format("Service '%s' seems to go down - the last good check was on '%s'", service, previousSuccessfulCheck) :
+                String.format("Service '%s' has returned to healthy state - the good health check was on '%s'", service, dateFormatter.format(System.currentTimeMillis()));
     }
 
     public List<String> getServicesStatusesHtmls() {

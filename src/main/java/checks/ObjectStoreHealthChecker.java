@@ -10,7 +10,6 @@ import org.openstack4j.api.storage.ObjectStorageService;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.common.Identifier;
 import org.openstack4j.model.common.Payload;
-import org.openstack4j.model.identity.v3.Token;
 import org.openstack4j.model.storage.object.SwiftObject;
 import org.openstack4j.openstack.OSFactory;
 
@@ -31,10 +30,14 @@ public class ObjectStoreHealthChecker extends AbstractHealthChecker {
 
     private ObjectStoreConfig objectStoreConfig;
 
-    private Token token;
-
     private String filename;
     private String containerName;
+
+    private String username;
+    private String password;
+    private String projectId;
+    private String authUrl;
+    private Identifier domainIdentifier;
 
     public ObjectStoreHealthChecker(ObjectStoreConfig objectStoreConfig) {
         super(objectStoreConfig.getName());
@@ -58,37 +61,35 @@ public class ObjectStoreHealthChecker extends AbstractHealthChecker {
         }
         ObjectStoreCredentials credentials = (new Gson()).fromJson(credentialsJson, ObjectStoreCredentials.class);
 
-        String username = credentials.getUsername();
-        String password = credentials.getPassword();
+        username = credentials.getUsername();
+        password = credentials.getPassword();
+        projectId = credentials.getProjectId();
+        authUrl = credentials.getAuth_url() + "/v3";
+
         String domainId = credentials.getDomainId();
-        String projectId = credentials.getProjectId();
-        String region = credentials.getRegion();
-        String authUrl = credentials.getAuth_url() + "/v3";
+        domainIdentifier = Identifier.byId(domainId);
 
-
-        if (isNullOrEmpty(username) || isNullOrEmpty(password) || isNullOrEmpty(domainId) || isNullOrEmpty(projectId) || isNullOrEmpty(authUrl) || isNullOrEmpty(region)) {
+        if (isNullOrEmpty(username) || isNullOrEmpty(password) || isNullOrEmpty(domainId) || isNullOrEmpty(projectId) || isNullOrEmpty(authUrl)) {
             throw new Exception("Credentials values can't be empty");
         }
 
         logger.info("Authenticating against - " + authUrl);
+    }
 
-        Identifier domainIdentifier = Identifier.byId(domainId);
-
+    private ObjectStorageService getObjectStorage() {
         OSClient.OSClientV3 os = OSFactory.builderV3()
                 .endpoint(authUrl)
                 .credentials(username, password, domainIdentifier)
                 .scopeToProject(Identifier.byId(projectId))
                 .authenticate();
+        logger.info("Creating and authenticating OS client was successful!");
 
-        os.useRegion(region);
-        logger.info("Authentication was successful! - creating token");
-
-        token = os.getToken();
+        return os.objectStorage();
     }
 
     @Override
     protected CheckResult runSpecificCheck() throws Exception {
-        ObjectStorageService objectStorage = OSFactory.clientFromToken(token).objectStorage();
+        ObjectStorageService objectStorage = getObjectStorage();
 
         String randomUid = UUID.randomUUID().toString();
         InputStream stream = new ByteArrayInputStream(randomUid.getBytes(Charset.forName("UTF-8")));

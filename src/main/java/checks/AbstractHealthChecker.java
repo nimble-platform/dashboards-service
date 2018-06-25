@@ -9,10 +9,10 @@ import org.apache.log4j.Logger;
 public abstract class AbstractHealthChecker implements HealthChecker {
     private final static Logger logger = Logger.getLogger(AbstractHealthChecker.class);
 
-    protected String serviceName;
+    private String serviceName;
     private boolean isInitialized;
 
-    protected AbstractHealthChecker(String serviceName) {
+    AbstractHealthChecker(String serviceName) {
         this.serviceName = serviceName;
         if (serviceName == null || serviceName.isEmpty()) {
             logger.error("Service name can't be null or empty");
@@ -47,7 +47,7 @@ public abstract class AbstractHealthChecker implements HealthChecker {
             initSpecific();
             isInitialized = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error during init - ", e);
             isInitialized = false;
         }
     }

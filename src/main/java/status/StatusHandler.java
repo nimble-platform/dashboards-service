@@ -7,6 +7,7 @@ import checks.EurekaHealthCheck;
 import checks.HealthChecker;
 import checks.MessageHubHealthCheck;
 import checks.ObjectStoreHealthChecker;
+import common.Incident;
 import common.SlackBotHandler;
 import configs.DatabaseConfig;
 import configs.EurekaConfig;
@@ -43,14 +44,13 @@ public class StatusHandler {
 
     private String statusRowTemplate = "<tr><td class=\"statusData\">%s %s</tr>";
 
-
     public StatusHandler(int frequencyInSec, List<SimpleServiceConfig> serviceToCheck, List<DatabaseConfig> dbsToCheck, MessageHubConfig messageHubConfig, ObjectStoreConfig objectStore, EurekaConfig eurekaConfig) {
-
         eurekaHealthCheck = new EurekaHealthCheck(eurekaConfig);
-        if (initService(eurekaHealthCheck)) {
+        try {
+            eurekaHealthCheck.init();
             logger.info("Eureka service was initialized successfully");
-        } else {
-            logger.error("Failed to initialize Eureka service");
+        } catch (Exception e) {
+            logger.error("Failed to initialize Eureka service", e);
         }
 
         initAndAddService(eurekaConfig.getName(), eurekaHealthCheck, new NonServiceHealthStatus(), servicesCheckers, serviceToStatus);
@@ -109,22 +109,17 @@ public class StatusHandler {
     }
 
     private void initAndAddService(String service, HealthChecker checker, AbstractHealthStatus status, Map<String, HealthChecker> checkersMap, Map<String, AbstractHealthStatus> statusMap) {
-        if (!initService(checker)) {
-            logger.error("Failed to initialize health checker for service - " + service);
-        } else {
+        try {
+            logger.info("Running init method for service - " + service);
+            checker.init();
             logger.info("Successfully initialized health check for service - " + service);
             statusMap.put(service, status);
             checkersMap.put(service, checker);
-        }
-    }
-
-    private boolean initService(HealthChecker checker) {
-        try {
-            checker.init();
-            return true;
         } catch (Exception e) {
-            logger.error(e);
-            return false;
+            String msg = "Failed to initialize health checker for service: " + service + ", error: " + e.getMessage();
+            logger.error(msg, e);
+            Incident i = new Incident(System.currentTimeMillis(), service, msg);
+            StatusDashboard.dbManager.addIncident(i);
         }
     }
 
@@ -141,8 +136,13 @@ public class StatusHandler {
                             AbstractHealthStatus serviceStatus = statuses.get(k);
                             CheckResult.Result previous = serviceStatus.getLastCheck().getResult();
                             if (previous != v.getResult()) {
-                                String message = generateSlackMessage(previous, k, serviceStatus.getDateString());
+                                long currentTime = System.currentTimeMillis();
+
+                                String message = generateIncidentMessage(previous, k, serviceStatus.getDateString(), currentTime);
                                 SlackBotHandler.sendMessageToChannel(message);
+
+                                Incident i = new Incident(currentTime, k, message);
+                                StatusDashboard.dbManager.addIncident(i);
                             }
                             statuses.get(k).setLastCheck(v);
                         });
@@ -175,10 +175,10 @@ public class StatusHandler {
         return serviceToCheckResult;
     }
 
-    private String generateSlackMessage(CheckResult.Result previous, String service, String previousSuccessfulCheck) {
+    private String generateIncidentMessage(CheckResult.Result previous, String service, String previousSuccessfulCheck, long currentTime) {
         return (previous == CheckResult.Result.GOOD) ?
                 String.format("Service '%s' seems to go down - the last good check was on '%s'", service, previousSuccessfulCheck) :
-                String.format("Service '%s' has returned to healthy state - the good health check was on '%s'", service, dateFormatter.format(System.currentTimeMillis()));
+                String.format("Service '%s' has returned to healthy state - the good health check was on '%s'", service, dateFormatter.format(currentTime));
     }
 
     public List<String> getServicesStatusesHtmls() {

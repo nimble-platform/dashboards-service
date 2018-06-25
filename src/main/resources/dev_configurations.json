@@ -55,5 +55,13 @@
       "CATALOG-SEARCH-SERVICE",
       "ERROR-NO-SERVICE"
     ]
+  },
+  "incidentsDb": {
+    "name": "Nimble Postgres",
+    "tableName": "incidents_nimble_dev",
+    "driverName": "org.postgresql.Driver",
+    "envUsername": "POSTGRES_USERNAME",
+    "envPassword": "POSTGRES_PASSWORD",
+    "envUrl": "POSTGRES_URL"
   }
 }

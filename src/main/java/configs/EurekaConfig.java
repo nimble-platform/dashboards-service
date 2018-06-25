@@ -6,20 +6,14 @@ import java.util.List;
  * Created by evgeniyh on 3/18/18.
  */
 
-public class EurekaConfig implements ServiceConfig {
-    private final String name;
+public class EurekaConfig extends BasicConfig {
     private final String url;
     private final List<String> services;
 
     public EurekaConfig(String name, String url, List<String> services) {
-        this.name = name;
+        super(name);
         this.url = url;
         this.services = services;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     public String getUrl() {

@@ -4,22 +4,16 @@ package configs;
  * Created by evgeniyh on 2/19/18.
  */
 
-public class MessageHubConfig implements ServiceConfig {
-    private final String name;
+public class MessageHubConfig extends BasicConfig {
     private final String envCredentials;
     private final String testTopic;
     private final String consumerGroupId;
 
     public MessageHubConfig(String name, String envCredentials, String testTopic, String consumerGroupId) {
-        this.name = name;
+        super(name);
         this.envCredentials = envCredentials;
         this.testTopic = testTopic;
         this.consumerGroupId = consumerGroupId;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     public String getEnvCredentials() {

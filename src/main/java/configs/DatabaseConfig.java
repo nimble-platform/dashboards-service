@@ -4,24 +4,18 @@ package configs;
  * Created by evgeniyh on 2/17/18.
  */
 
-public class DatabaseConfig implements ServiceConfig {
-    private final String name;
+public class DatabaseConfig extends BasicConfig {
     private final String envUsername;
     private final String envPassword;
     private final String envUrl;
     private final String driverName;
 
     public DatabaseConfig(String name, String envUsername, String envPassword, String envUrl, String driverName) {
-        this.name = name;
+        super(name);
         this.envUsername = envUsername;
         this.envPassword = envPassword;
         this.envUrl = envUrl;
         this.driverName = driverName;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     public String getEnvUsername() {

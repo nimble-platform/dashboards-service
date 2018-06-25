@@ -5,20 +5,14 @@ package configs;
  */
 
 
-public class SimpleServiceConfig implements ServiceConfig {
-    private final String name;
+public class SimpleServiceConfig extends BasicConfig {
     private final String url;
     private final String k8sName;
 
     public SimpleServiceConfig(String name, String url, String k8sName) {
-        this.name = name;
+        super(name);
         this.url = url;
         this.k8sName = k8sName;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     public String getUrl() {

@@ -14,10 +14,25 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <resteasy.version>3.0.9.Final</resteasy.version>
-
     </properties>
 
+    <repositories>
+        <repository>
+            <id>db-connector-mvn-repo</id>
+            <url>https://raw.github.com/evgenhvost@gmail.com/nimble-project/db-connector/mvn-repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>org</groupId>
+            <artifactId>db-connector</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <dependency>
             <groupId>com.hubspot.slack</groupId>
             <artifactId>slack-base</artifactId>

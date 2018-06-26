@@ -19,7 +19,7 @@
     <repositories>
         <repository>
             <id>db-connector-mvn-repo</id>
-            <url>https://raw.github.com/evgenhvost@gmail.com/nimble-project/db-connector/mvn-repo/</url>
+            <url>https://raw.github.com/nimble-project/db-connector/mvn-repo/</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>

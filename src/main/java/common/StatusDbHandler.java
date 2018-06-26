@@ -5,7 +5,10 @@ import connector.ManagerConfig;
 import org.apache.log4j.Logger;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by evgeniyh on 6/25/18.
@@ -14,14 +17,13 @@ import java.sql.SQLException;
 public class StatusDbHandler extends DBManager {
     private final static Logger logger = Logger.getLogger(StatusDbHandler.class);
 
-    private final String tableName;
     private final String addIncidentQuery;
+    private final String accidentsTableName;
 
-    public StatusDbHandler(ManagerConfig config, String tableName) throws SQLException, ClassNotFoundException {
+    public StatusDbHandler(ManagerConfig config, String accidentsTableName) throws SQLException, ClassNotFoundException {
         super(config);
-        this.tableName = tableName;
-
-        addIncidentQuery = String.format("INSERT INTO %s VALUES (?,?,?);", tableName);
+        this.accidentsTableName = accidentsTableName;
+        addIncidentQuery = String.format("INSERT INTO %s VALUES (?,?,?);", accidentsTableName);
     }
 
     public void addIncident(Incident incident) {
@@ -37,5 +39,20 @@ public class StatusDbHandler extends DBManager {
         } catch (SQLException e) {
             logger.error("Error during add of an incident to the DB", e);
         }
+    }
+
+    public List<Incident> getAllIncidents() {
+        List<Incident> incidents = new LinkedList<>();
+        try {
+            ResultSet rs = readAllTable(accidentsTableName);
+            Incident i;
+            while (rs.next()) {
+                i = new Incident(rs.getLong(1), rs.getString(2), rs.getString(3));
+                incidents.add(i);
+            }
+        } catch (SQLException e) {
+            logger.error("Error during read of the incidents - " + e);
+        }
+        return incidents;
     }
 }

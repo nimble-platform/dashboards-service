@@ -13,7 +13,7 @@ public class StatusConfigurations {
     private final MessageHubConfig messageHub;
     private final ObjectStoreConfig objectStore;
     private final EurekaConfig eureka;
-    private final IncidentsDbConfig incidentsDbConfig;
+    private final IncidentsDbConfig incidentsDb;
 
     public StatusConfigurations(int frequency,
                                 List<SimpleServiceConfig> services,
@@ -21,14 +21,14 @@ public class StatusConfigurations {
                                 MessageHubConfig messageHub,
                                 ObjectStoreConfig objectStore,
                                 EurekaConfig eureka,
-                                IncidentsDbConfig incidentsDbConfig) {
+                                IncidentsDbConfig incidentsDb) {
         this.frequency = frequency;
         this.services = services;
         this.databases = databases;
         this.messageHub = messageHub;
         this.objectStore = objectStore;
         this.eureka = eureka;
-        this.incidentsDbConfig = incidentsDbConfig;
+        this.incidentsDb = incidentsDb;
     }
 
     public int getFrequency() {
@@ -55,7 +55,7 @@ public class StatusConfigurations {
         return eureka;
     }
 
-    public IncidentsDbConfig getIncidentsDbConfig() {
-        return incidentsDbConfig;
+    public IncidentsDbConfig getIncidentsDb() {
+        return incidentsDb;
     }
 }

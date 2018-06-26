@@ -1,9 +1,14 @@
 {
-  "frequency": 80,
+  "frequency": 10,
   "services": [
     {
       "name": "Messaging-Service (local)",
-      "url": "http://9.148.10.98:998/health-check",
+      "url": "http://9.148.10.75:998/health-check",
+      "k8sName": "none"
+    },
+    {
+      "name": "CSB Service (local)",
+      "url": "http://9.148.10.75:999/health-check",
       "k8sName": "none"
     },
     {

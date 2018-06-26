@@ -2,11 +2,13 @@ package status;
 
 import com.google.gson.Gson;
 import common.Common;
+import common.Incident;
 import common.StatusDbHandler;
 import configs.IncidentsDbConfig;
 import configs.StatusConfigurations;
 import connector.ManagerConfig;
 import org.apache.log4j.Logger;
+import org.jboss.resteasy.util.HttpResponseCodes;
 
 import javax.inject.Singleton;
 import javax.ws.rs.ApplicationPath;
@@ -19,6 +21,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.DatabaseMetaData;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,8 @@ import java.util.Map;
 @Singleton
 public class StatusDashboard extends Application {
     private final static Logger logger = Logger.getLogger(StatusDashboard.class);
+
+    static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss (z)");
 
     private final Map<String, String> envToFile = new HashMap<String, String>() {
         {
@@ -63,7 +68,7 @@ public class StatusDashboard extends Application {
 
         StatusConfigurations c = (new Gson()).fromJson(jsonConfig, StatusConfigurations.class);
 
-        setUpDbConnectorAndTable(c.getIncidentsDbConfig());
+        setUpDbConnectorAndTable(c.getIncidentsDb());
 
         handler = new StatusHandler(c.getFrequency(), c.getServices(), c.getDatabases(), c.getMessageHub(), c.getObjectStore(), c.getEureka());
     }
@@ -145,9 +150,18 @@ public class StatusDashboard extends Application {
         List<String> infrastructures = handler.getInfrastructureStatusesHtmls();
         infrastructures.forEach(sb::append);
         String infrastructuresHtmls = sb.toString();
+        sb.setLength(0);
 
-        String completedHtml = String.format(htmlTemplate, servicesHtml, infrastructuresHtmls);
+        List<Incident> incidents = dbManager.getAllIncidents();
+        for (Incident i : incidents) {
+            sb.append("<tr>");
+            sb.append("<td class=\"statusData\" style=\"width:20%\">").append(dateFormatter.format(i.getTime())).append("</td>");
+            sb.append("<td class=\"statusData\" style=\"width:15%\">").append(i.getService()).append("</td>");
+            sb.append("<td class=\"statusData\" style=\"width:65%\">").append(i.getMessage()).append("</td>");
+            sb.append("</tr>");
+        }
+        String completedHtml = String.format(htmlTemplate, servicesHtml, infrastructuresHtmls, sb.toString());
 
-        return Response.status(200).entity(completedHtml).build();
+        return Response.status(HttpResponseCodes.SC_OK).entity(completedHtml).build();
     }
 }

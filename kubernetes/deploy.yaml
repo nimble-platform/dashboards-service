@@ -53,11 +53,11 @@ spec:
             secretKeyRef:
               name: messagehub-credentials
               key: credentials.json
-        - name: OBJECT_STORE_CREDENTIALS
-          valueFrom:
-            secretKeyRef:
-              name: object-store-credentials
-              key: credentials.json
+#        - name: OBJECT_STORE_CREDENTIALS
+#          valueFrom:
+#            secretKeyRef:
+#              name: object-store-credentials
+#              key: credentials.json
         ports:
         - containerPort: 8080
           name: http

@@ -37,12 +37,6 @@
     "testTopic": "health-test-topic",
     "consumerGroupId": "healthCheck"
   },
-  "objectStore": {
-    "name": "Object Store Nimble",
-    "envCredentials": "OBJECT_STORE_CREDENTIALS",
-    "containerName": "test",
-    "fileName": "health-test-file"
-  },
   "eureka": {
     "name": "Nimble Eureka",
     "url": "https://nimble-platform.salzburgresearch.at/nimble/health",

@@ -6,7 +6,6 @@ import checks.DBHealthCheck;
 import checks.EurekaHealthCheck;
 import checks.HealthChecker;
 import checks.MessageHubHealthCheck;
-import checks.ObjectStoreHealthChecker;
 import common.Incident;
 import common.SlackBotHandler;
 import configs.DatabaseConfig;
@@ -52,8 +51,10 @@ public class StatusHandler {
         }
 
         initAndAddService(eurekaConfig.getName(), eurekaHealthCheck, new NonServiceHealthStatus(), servicesCheckers, serviceToStatus);
-        initAndAddService(objectStore.getName(), new ObjectStoreHealthChecker(objectStore), new NonServiceHealthStatus(), infrastructuresCheckers, infrastructureToStatus);
         initAndAddService(messageHubConfig.getName(), new MessageHubHealthCheck(messageHubConfig), new NonServiceHealthStatus(), infrastructuresCheckers, infrastructureToStatus);
+
+//        TODO: add when object storage becomes a service on the platform and add the missing configs
+//        initAndAddService(objectStore.getName(), new ObjectStoreHealthChecker(objectStore), new NonServiceHealthStatus(), infrastructuresCheckers, infrastructureToStatus);
 
         for (SimpleServiceConfig sc : serviceToCheck) {
             initAndAddService(sc.getName(), new BasicHealthChecker(sc.getName(), sc.getUrl()), new ServiceHealthStatus(sc.getK8sName()), servicesCheckers, serviceToStatus);

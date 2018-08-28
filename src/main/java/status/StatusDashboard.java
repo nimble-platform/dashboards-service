@@ -138,7 +138,7 @@ public class StatusDashboard extends Application {
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/status")
-    public Response getStatisticsDashboard() {
+    public Response createStatusDashboard() {
         logger.info("Creating status dashboard");
         StringBuilder sb = new StringBuilder();
         List<String> servicesHtmls = handler.getServicesStatusesHtmls();
